@@ -1,2 +1,0 @@
-# classroot
-Assignment
