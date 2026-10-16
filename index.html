@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angle Adventures</title>
+<style>
+:root{
+  --ink:#2b2750; --ink2:#5d5887; --lav:#7a66f0; --lav-l:#ece8ff; --sky:#4aa8ee; --mint:#26b28e;
+  --peach:#ff9f73; --butter:#ffd35c; --coral:#ff6b6b;
+  --font:"Avenir Next","Nunito","Segoe UI Rounded","Segoe UI","Trebuchet MS",system-ui,sans-serif;
+  --bg1:#e9e4ff; --bg2:#ffe9dc;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:var(--font);color:var(--ink);
+  background:radial-gradient(1200px 800px at 50% 0%,#36306a,#1d1938 70%);}
+button{font-family:inherit;color:inherit;cursor:pointer}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;border-radius:22px;overflow:hidden;
+  background:radial-gradient(1100px 700px at 12% 8%,var(--bg1),transparent 62%),
+             radial-gradient(1000px 760px at 92% 95%,var(--bg2),transparent 60%),#f8f6ff;
+  box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.08);}
+#bg,#geo,#slides,#fx{position:absolute;inset:0}
+#bg{pointer-events:none}
+#geo{pointer-events:none;overflow:visible}
+#slides{pointer-events:none}
+#fx{pointer-events:none;z-index:6}
+
+/* ---------- background decor ---------- */
+.fl{animation:floaty 9s ease-in-out infinite alternate}
+.fl2{animation:floaty 12s ease-in-out infinite alternate-reverse}
+.fl3{animation:drift 30s linear infinite alternate}
+.tw{animation:twinkle 3.2s ease-in-out infinite}
+@keyframes floaty{from{transform:translateY(-10px) rotate(-4deg)}to{transform:translateY(12px) rotate(5deg)}}
+@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(40px)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:.9;transform:scale(1.1)}}
+.fl,.fl2,.tw{transform-box:fill-box;transform-origin:center}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;pointer-events:none}
+.slide>*{pointer-events:auto}
+.slide.leaving,.slide.leaving *{pointer-events:none!important}
+.kicker{position:absolute;left:90px;top:48px;font-size:17px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:#6a57e8;background:rgba(255,255,255,.85);padding:8px 16px;border-radius:999px;
+  box-shadow:0 4px 14px rgba(106,87,232,.14);white-space:nowrap}
+.title{position:absolute;left:90px;top:92px;margin:0;font-size:50px;line-height:1.08;font-weight:800;letter-spacing:-.015em;white-space:nowrap}
+.col{position:absolute;display:flex;flex-direction:column;gap:16px}
+.card{background:rgba(255,255,255,.9);border-radius:26px;padding:22px 26px;
+  box-shadow:0 14px 34px rgba(76,58,170,.12),inset 0 1px 0 #fff;border:1.5px solid rgba(122,102,240,.16)}
+.card h3{margin:0 0 8px;font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:#7a66f0}
+.q{font-size:27px;line-height:1.3;font-weight:600}
+.q b{font-weight:800}
+.small{font-size:20px;line-height:1.4;color:var(--ink2)}
+.build:not(.in){display:none!important}
+.opts{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.opt{font-size:26px;font-weight:800;min-width:110px;padding:12px 20px;border-radius:18px;border:2.5px solid #d7d0ff;background:#fff;
+  transition:transform .18s,box-shadow .18s,border-color .2s,background .2s,opacity .2s;box-shadow:0 4px 0 #d7d0ff}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:#a796ff;box-shadow:0 6px 0 #c3b8ff}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #c3b8ff}
+.opt:disabled{cursor:default}
+.opt.correct{background:#e3fbf2;border-color:#26b28e;box-shadow:0 4px 0 #9fe6cc;color:#14785d}
+.opt.wrong{background:#fff3f1;border-color:#ffb3a8;box-shadow:0 4px 0 #ffd2cb;color:#b85a4d;opacity:.8}
+.opt.picked{outline:3px solid rgba(122,102,240,.35);outline-offset:3px}
+.fb{margin-top:12px;font-size:21px;line-height:1.4;min-height:0;color:var(--ink2)}
+.fb:empty{display:none}
+.fb.good{color:#14785d}.fb.hint{color:#9a5a12}
+.chips{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:30px;font-weight:800;padding:8px 18px;border-radius:16px;background:#fff;border:2px solid #eee;font-variant-numeric:tabular-nums}
+.chip.yel{background:#fff6d6;border-color:#ffd35c}.chip.sky{background:#e6f4ff;border-color:#86c8ff}
+.chip.peach{background:#fff0e7;border-color:#ffb48f}.chip.mint{background:#e4fbf2;border-color:#7fe0bd}
+.chip.coral{background:#ffecec;border-color:#ff9a9a}
+.eqsign{font-size:32px;font-weight:800;color:#7a66f0}
+.term{margin-top:14px;font-size:30px;font-weight:800;background:linear-gradient(90deg,#7a66f0,#ff6b9a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rule{border-radius:22px;padding:18px 24px;font-size:26px;font-weight:800;line-height:1.3;
+  background:linear-gradient(135deg,#fff7da,#ffeaf2);border:2.5px solid #ffd35c;box-shadow:0 10px 26px rgba(255,180,60,.22);position:relative}
+.rule::before{content:"★ RULE";display:block;font-size:14px;letter-spacing:.16em;color:#d08a00;margin-bottom:4px}
+.rule.conv::before{content:"★ THE CONVERSE"}
+.rule.def::before{content:"✎ DEFINITION";color:#6a57e8}
+.rule.def{background:linear-gradient(135deg,#f1eeff,#e8f6ff);border-color:#b9adff;box-shadow:0 10px 26px rgba(122,102,240,.16)}
+.eq{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.5}
+.eq .dim{color:#9a95bd;font-weight:700;font-size:20px;margin-left:8px}
+.eqline{opacity:0;transform:translateX(-14px);transition:opacity .45s,transform .5s cubic-bezier(.2,.9,.3,1.3)}
+.eqline.in{opacity:1;transform:none}
+.bubble{position:absolute;background:#fff;border-radius:24px;padding:18px 22px;font-size:23px;line-height:1.35;font-weight:600;
+  box-shadow:0 12px 30px rgba(76,58,170,.15);border:2px solid #e6e0ff}
+.bubble::after{content:"";position:absolute;width:22px;height:22px;background:#fff;border:2px solid #e6e0ff;border-top:none;border-left:none;transform:rotate(-45deg);right:-12px;top:42%}
+.bubble.tail-down::after{right:auto;left:70%;top:auto;bottom:-12px;transform:rotate(45deg)}
+.bubble .who{display:block;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#7a66f0;font-weight:800;margin-bottom:4px}
+.btn{font-size:21px;font-weight:800;padding:12px 20px;border-radius:16px;border:2px solid #d7d0ff;background:#fff;box-shadow:0 4px 0 #d7d0ff;transition:transform .15s,box-shadow .15s,background .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 #c3b8ff}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #c3b8ff}
+.btn.primary{background:linear-gradient(135deg,#8b77ff,#6a57e8);color:#fff;border-color:#5a47d6;box-shadow:0 4px 0 #4a39b8}
+.btn.sm{font-size:17px;padding:10px 14px;border-radius:14px}
+.btn.on{background:#ece8ff;border-color:#7a66f0}
+.numform{display:flex;gap:12px;margin-top:14px;align-items:center}
+.numform input{width:150px;font-size:28px;font-weight:800;padding:10px 14px;border-radius:16px;border:2.5px solid #d7d0ff;font-family:inherit;color:var(--ink);text-align:center}
+.numform input:focus{outline:none;border-color:#7a66f0;box-shadow:0 0 0 4px rgba(122,102,240,.18)}
+.numform .deg{font-size:28px;font-weight:800;margin-left:-6px}
+
+/* slide 1 hero */
+.hero{position:absolute;left:110px;top:200px;width:720px}
+.hero .title{position:relative;left:0;top:0;font-size:96px;line-height:.95;letter-spacing:-.02em;white-space:normal}
+.hero .title>span{display:block;white-space:nowrap}
+.hero .ltr{display:inline-block;opacity:0;transform:translateY(40px) rotate(6deg);animation:ltrIn .8s cubic-bezier(.2,.9,.3,1.25) forwards}
+@keyframes ltrIn{to{opacity:1;transform:none}}
+.grad1{background:linear-gradient(100deg,#6a57e8 0%,#9b6bff 50%,#ff7aa8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:linear-gradient(100deg,#ff8a5c 0%,#ffb03b 45%,#26b28e 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{margin:26px 0 0;font-size:31px;font-weight:700;color:#5d5887}
+.hero-q{margin:18px 0 0;font-size:26px;line-height:1.35;color:var(--ink);max-width:620px}
+.start{margin-top:40px;font-size:27px;font-weight:800;padding:18px 34px;border-radius:999px;border:none;color:#fff;
+  background:linear-gradient(135deg,#ff7a7a,#ff9e5c);box-shadow:0 8px 0 #e0574f,0 18px 34px rgba(255,110,90,.35);transition:transform .15s,box-shadow .15s}
+.start:hover{transform:translateY(-3px)}
+.start:active{transform:translateY(4px);box-shadow:0 3px 0 #e0574f}
+.start.attn{animation:attn 2.4s ease-in-out infinite}
+@keyframes attn{0%,70%,100%{transform:none}78%{transform:translateY(-6px) scale(1.04)}86%{transform:none}92%{transform:translateY(-3px) scale(1.02)}}
+
+/* lab */
+.lab-slider{position:absolute;left:170px;top:808px;width:780px;display:flex;align-items:center;gap:18px;background:rgba(255,255,255,.85);
+  padding:12px 24px;border-radius:999px;box-shadow:0 8px 22px rgba(76,58,170,.12)}
+.lab-slider label{font-size:19px;font-weight:800;white-space:nowrap;color:#d14f4f}
+.lab-slider input{flex:1;accent-color:#ff6b6b;height:28px}
+.lab-slider .ro{font-size:20px;font-weight:800;min-width:92px;text-align:right;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.toggle{display:inline-flex;background:#efecff;border-radius:999px;padding:5px;gap:4px;margin-top:6px}
+.toggle button{border:none;background:transparent;font-size:20px;font-weight:800;padding:10px 18px;border-radius:999px;color:#5d5887;transition:background .25s,color .25s}
+.toggle button.on{background:#fff;color:#6a57e8;box-shadow:0 3px 10px rgba(76,58,170,.18)}
+.dots{display:flex;gap:10px}
+.dots i{width:14px;height:14px;border-radius:50%;background:#e1dcff;transition:background .3s,transform .3s}
+.dots i.cur{background:#a796ff;transform:scale(1.25)}
+.dots i.done{background:#26b28e}
+.qnum{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:#7a66f0;font-weight:800}
+.ptext{font-size:22px;line-height:1.38}
+.ptext li{margin:6px 0}
+.ptext ul{margin:8px 0 0;padding-left:24px}
+.ph{font-size:15px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#7a66f0}
+.ph2{font-size:27px;font-weight:800;margin:2px 0 6px}
+.celebrate{font-size:28px;font-weight:800;line-height:1.3;background:linear-gradient(90deg,#6a57e8,#ff6b9a,#ff9e5c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.emph{animation:emph .9s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes emph{0%{transform:scale(.9)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+/* ---------- Pip ---------- */
+#pip{position:absolute;left:0;top:0;width:160px;height:160px;transform-origin:0 0;z-index:5;pointer-events:none}
+#pip svg{overflow:visible}
+.pip-float{animation:pipfloat 3.6s ease-in-out infinite}
+@keyframes pipfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.pip-eyes{animation:blink 4.6s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.armR,.armL{transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.armR{transform:rotate(55deg)}.armL{transform:rotate(-55deg)}
+.mood-wave .armR{animation:wave 1.1s ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-80deg)}to{transform:rotate(-30deg)}}
+.mood-cheer .pip-body{animation:hop .55s ease-in-out infinite alternate}
+.mood-cheer .armR{transform:rotate(-60deg)}.mood-cheer .armL{transform:rotate(60deg)}
+@keyframes hop{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.mood-think .armL{transform:rotate(-120deg)}
+.mouth-open{display:none}.mood-cheer .mouth-open,.mood-wave .mouth-open{display:block}
+.mood-cheer .mouth-smile,.mood-wave .mouth-smile{display:none}
+.pip-star{animation:starspin 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes starspin{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(20deg) scale(1.15)}}
+
+/* geometry styling */
+.halo{animation:halo 1.6s ease-in-out infinite}
+@keyframes halo{0%,100%{stroke-width:10px}50%{stroke-width:22px}}
+.flow{animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-.1}}
+.dotpulse{animation:dotpulse 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes dotpulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.6);opacity:0}}
+.handle{cursor:grab;pointer-events:auto}
+.handle:active{cursor:grabbing}
+.handle-ring{animation:dotpulse 2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.wlbl,.wval,.lname{font-family:var(--font);text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
+
+/* sparkles */
+.spark{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%)}
+
+/* ---------- presenter chrome ---------- */
+#bar{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;
+  background:rgba(25,21,52,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:6px 8px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.35);color:#fff;z-index:20;user-select:none}
+#bar button{background:transparent;border:none;color:#dcd6ff;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;transition:background .2s,color .2s}
+#bar button:hover{background:rgba(255,255,255,.12);color:#fff}
+#bar button:focus-visible{outline:2px solid #a796ff;outline-offset:1px}
+#bar button.nextb{align-items:center;width:auto;padding:0 18px 0 20px;border-radius:999px;background:linear-gradient(135deg,#8b77ff,#6a57e8);color:#fff;font-weight:800;font-size:15px;gap:6px;display:flex}
+#bar button.nextb:hover{filter:brightness(1.1)}
+#bar button.on{color:#ffd35c}
+#bar svg{width:20px;height:20px}
+#count{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;letter-spacing:.06em;min-width:74px;text-align:center;color:#fff}
+#count small{color:#a59ed6;font-weight:700}
+.sep{width:1px;height:22px;background:rgba(255,255,255,.18);margin:0 4px}
+#prog{position:absolute;left:0;bottom:0;height:5px;width:100%;background:rgba(122,102,240,.12);z-index:7}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8b77ff,#ff7aa8,#ffb03b);border-radius:0 4px 4px 0;transition:width .8s cubic-bezier(.65,0,.35,1)}
+#notes{position:fixed;right:16px;bottom:70px;width:380px;max-width:calc(100vw - 32px);max-height:60vh;overflow:auto;background:rgba(25,21,52,.94);color:#ece8ff;
+  border-radius:20px;padding:18px 20px;font-size:15px;line-height:1.5;z-index:21;box-shadow:0 20px 50px rgba(0,0,0,.4);
+  transform:translateY(20px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+#notes.show{opacity:1;transform:none;pointer-events:auto}
+#notes h4{margin:0 0 2px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#a796ff}
+#notes .nt{font-size:18px;font-weight:800;margin-bottom:8px;color:#fff}
+#notes ul{padding-left:18px;margin:6px 0}
+#rotate{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(25,21,52,.85);color:#fff;font-size:13px;padding:6px 14px;border-radius:999px;display:none;z-index:22}
+@media (orientation:portrait) and (max-width:700px){#rotate{display:block}}
+@media (max-width:520px){#bar{gap:1px;padding:4px 5px;bottom:6px}#bar button{width:32px;height:32px}#bar svg{width:17px;height:17px}
+  #bar button.nextb{padding:0 12px;font-size:13px}#count{min-width:54px;font-size:13px}.sep{display:none}}
+
+body.reduced .fl,body.reduced .fl2,body.reduced .fl3,body.reduced .tw,body.reduced .pip-float,body.reduced .halo,
+body.reduced .flow,body.reduced .dotpulse,body.reduced .handle-ring,body.reduced .start.attn,body.reduced .pip-star,
+body.reduced .mood-cheer .pip-body,body.reduced .mood-wave .armR{animation:none!important}
+body.reduced .hero .ltr{animation-duration:.01s!important;animation-delay:0s!important}
+</style>
+</head>
+<body>
+<div id="rotate">Tip: rotate your device for a bigger slide</div>
+<div id="stage" role="region" aria-label="Presentation slide">
+  <!-- whimsical background -->
+  <svg id="bg" viewBox="0 0 1600 900" aria-hidden="true">
+    <defs>
+      <linearGradient id="gTri" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#cfc6ff"/><stop offset="1" stop-color="#ffd1e6"/></linearGradient>
+      <linearGradient id="gCirc" x1="0" x2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="1" stop-color="#c9f5e4"/></linearGradient>
+    </defs>
+    <g class="fl3" opacity=".9">
+      <g fill="#fff" opacity=".75"><ellipse cx="240" cy="790" rx="120" ry="34"/><ellipse cx="300" cy="770" rx="70" ry="40"/><ellipse cx="200" cy="772" rx="54" ry="30"/></g>
+      <g fill="#fff" opacity=".6"><ellipse cx="1330" cy="110" rx="110" ry="28"/><ellipse cx="1380" cy="92" rx="64" ry="34"/><ellipse cx="1290" cy="96" rx="44" ry="24"/></g>
+    </g>
+    <g opacity=".55">
+      <path class="fl" d="M60 380 L118 290 L176 380 Z" fill="url(#gTri)" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+      <circle class="fl2" cx="1520" cy="420" r="36" fill="url(#gCirc)"/>
+      <rect class="fl" x="1050" y="780" width="54" height="54" rx="14" fill="#ffe3a6" transform="rotate(14 1077 807)"/>
+      <path class="fl2" d="M770 70 a46 46 0 0 1 92 0 Z" fill="none" stroke="#c7bdff" stroke-width="5"/>
+      <path class="fl" d="M1460 640 l26 0 M1473 627 l0 26" stroke="#ffb48f" stroke-width="6" stroke-linecap="round"/>
+      <path class="fl2" d="M40 600 l22 0 M51 589 l0 22" stroke="#86c8ff" stroke-width="6" stroke-linecap="round"/>
+      <circle class="fl" cx="950" cy="860" r="16" fill="#c9f5e4"/>
+    </g>
+    <g fill="#ffd35c">
+      <path class="tw" d="M480 60 l5 13 13 5 -13 5 -5 13 -5 -13 -13 -5 13 -5z"/>
+      <path class="tw" style="animation-delay:1.1s" d="M1180 220 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#b9adff"/>
+      <path class="tw" style="animation-delay:.5s" d="M120 160 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#ff9ec4"/>
+      <path class="tw" style="animation-delay:2s" d="M1540 820 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
+      <path class="tw" style="animation-delay:1.6s" d="M700 840 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" fill="#86c8ff"/>
+    </g>
+  </svg>
+
+  <svg id="geo" viewBox="0 0 1600 900" aria-label="Geometry diagram">
+    <defs>
+      <filter id="soft" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#4c3aaa" flood-opacity=".13"/></filter>
+      <marker id="arrowHead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#f08a3c"/></marker>
+    </defs>
+    <g id="panels"></g>
+    <g id="d2"></g>
+    <g id="d1"></g>
+  </svg>
+
+  <div id="slides"></div>
+
+  <div id="pip" aria-hidden="true">
+    <svg viewBox="0 0 160 160" width="160" height="160">
+      <defs>
+        <linearGradient id="pipBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6a9ff"/><stop offset="1" stop-color="#7563ee"/></linearGradient>
+        <linearGradient id="pipBelly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      </defs>
+      <ellipse cx="80" cy="152" rx="46" ry="6" fill="#2b2750" opacity=".13"/>
+      <g class="pip-float"><g class="pip-body">
+        <path d="M80 70 Q79 56 88 46" stroke="#7563ee" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path class="pip-star" d="M90 32 l4.2 8.6 9.4 1.4 -6.8 6.6 1.6 9.4 -8.4 -4.4 -8.4 4.4 1.6 -9.4 -6.8 -6.6 9.4 -1.4z" fill="#ffd35c" stroke="#f0b400" stroke-width="1.5" stroke-linejoin="round"/>
+        <rect x="54" y="132" width="16" height="16" rx="8" fill="#5f4fd8"/>
+        <rect x="90" y="132" width="16" height="16" rx="8" fill="#5f4fd8"/>
+        <g transform="translate(140 116)"><g class="armR"><path d="M0 0 L22 0" stroke="#6a57e8" stroke-width="7" stroke-linecap="round"/><circle cx="25" cy="0" r="6.5" fill="#ffd35c" stroke="#f0b400" stroke-width="1.5"/></g></g>
+        <g transform="translate(20 116)"><g class="armL"><path d="M0 0 L-22 0" stroke="#6a57e8" stroke-width="7" stroke-linecap="round"/><circle cx="-25" cy="0" r="6.5" fill="#ffd35c" stroke="#f0b400" stroke-width="1.5"/></g></g>
+        <path d="M16 134 A64 64 0 0 1 144 134 Q144 142 136 142 L24 142 Q16 142 16 134Z" fill="url(#pipBody)"/>
+        <path d="M30 128 A50 50 0 0 1 130 128" fill="none" stroke="url(#pipBelly)" stroke-width="12"/>
+        <g id="pipTicks" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"></g>
+        <g class="pip-eyes">
+          <ellipse cx="62" cy="106" rx="12" ry="13.5" fill="#fff"/><ellipse cx="98" cy="106" rx="12" ry="13.5" fill="#fff"/>
+          <g id="pupL"><circle cx="62" cy="107" r="6.5" fill="#2b2750"/><circle cx="64.5" cy="104" r="2.2" fill="#fff"/></g>
+          <g id="pupR"><circle cx="98" cy="107" r="6.5" fill="#2b2750"/><circle cx="100.5" cy="104" r="2.2" fill="#fff"/></g>
+        </g>
+        <ellipse cx="46" cy="124" rx="7" ry="4" fill="#ff9bc0" opacity=".75"/><ellipse cx="114" cy="124" rx="7" ry="4" fill="#ff9bc0" opacity=".75"/>
+        <path class="mouth-smile" d="M72 124 Q80 131 88 124" stroke="#2b2750" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path class="mouth-open" d="M71 122 Q80 122 89 122 Q87 133 80 133 Q73 133 71 122Z" fill="#2b2750"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="fx"></div>
+  <div id="prog"><i></i></div>
+</div>
+
+<nav id="bar" aria-label="Presentation controls">
+  <button id="bRestart" title="Restart presentation" aria-label="Restart presentation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+  <button id="bPrev" title="Previous (←)" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div id="count" aria-live="polite">01 <small>/ 08</small></div>
+  <button id="bNext" class="nextb" title="Next (→ or Space)" aria-label="Next">Next <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  <span class="sep"></span>
+  <button id="bNotes" title="Teacher notes (N)" aria-label="Toggle teacher notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg></button>
+  <button id="bMotion" title="Reduce motion" aria-label="Toggle reduced motion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12c3-6 6-6 9 0s6 6 9 0"/></svg></button>
+  <button id="bFull" title="Fullscreen (F)" aria-label="Toggle fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</nav>
+<aside id="notes" aria-label="Teacher notes"></aside>
+
+<script>
+"use strict";
+/* =====================================================================
+   ANGLE ADVENTURES — slide engine
+   - World state (two diagrams + Pip + background) is one plain object.
+   - Every slide describes its look declaratively: scene(st) -> world.
+   - The transition manager interpolates the CURRENT world into the
+     target world (positions, angles, radii, colours, opacities), so the
+     same lines/angles/character physically travel between slides (Morph).
+   - Angle measurements are always derived from the live geometry.
+   ===================================================================== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const NS='http://www.w3.org/2000/svg';
+const D2R=Math.PI/180;
+const clone=o=>JSON.parse(JSON.stringify(o));
+const clamp01=v=>Math.max(0,Math.min(1,v));
+let REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MS=()=>REDUCED?0.25:1;
+const wait=ms=>new Promise(r=>setTimeout(r,ms*MS()));
+const easeIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const easeOut=t=>1-Math.pow(1-t,3);
+const easeBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+
+const C={yel:'#ffd35c',sky:'#86c8ff',mint:'#7fe0bd',peach:'#ffb48f',lav:'#c7bdff',coral:'#ff9a9a',pink:'#ffafd0',mist:'#e2ddf6'};
+const LINE={l:'#7a66f0',t:'#ff6b6b',m:'#22b08b'};
+const WKEYS=['P_UR','P_UL','P_LL','P_LR','Q_UR','Q_UL','Q_LL','Q_LR'];
+
+/* ---------- colour helpers ---------- */
+const hex2rgb=h=>{h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+const rgb2hex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const mix=(a,b,t)=>{const A=hex2rgb(a),B=hex2rgb(b);return rgb2hex(A.map((v,i)=>v+(B[i]-v)*t));};
+
+/* ---------- world model ---------- */
+function wedgeDefault(){return{op:0,r:70,fill:C.yel,glow:0,lbl:'',lblOp:0,val:'auto',valOp:0};}
+function diagDefault(){
+  const w={};WKEYS.forEach(k=>w[k]=wedgeDefault());
+  return{gx:0,gy:0,gs:1,op:1,fs:1,sw:1,px:800,py:450,a1:0,a2:0,tau:70,dQ:260,
+    L1:{op:0,draw:0,len:400,off:0,nameOp:0},L2:{op:0,draw:0,len:400,off:0,nameOp:0},
+    T:{op:0,draw:0,up:320,down:320,nameOp:0},dotP:0,dotQ:0,par:0,handle:0,
+    conn:{op:0,draw:0,from:'P_UR',to:'Q_UR'},w};
+}
+function baseWorld(){
+  const d2=diagDefault();d2.op=0;
+  return{d1:diagDefault(),d2,pip:{x:1450,y:820,s:1,op:1,lx:800,ly:450,mood:'idle'},
+    pan:{a:0,b:0,q:0},bg1:'#e9e4ff',bg2:'#ffe9dc'};
+}
+/* two lines crossing at P (line l and line t) */
+function xDiagram(d,{px,py,tau,a1=0,len=400,arm=320,r=80}){
+  Object.assign(d,{px,py,tau,a1,a2:a1,dQ:arm*0.85});
+  Object.assign(d.L1,{op:1,draw:1,len,off:0});
+  Object.assign(d.T,{op:1,draw:1,up:arm,down:arm});
+  Object.assign(d.L2,{op:0,draw:0,len,off:0});
+  WKEYS.forEach(k=>d.w[k].r=r);
+}
+/* lines l and m crossed by transversal t at P and Q */
+function tDiagram(d,{px=620,py=350,tau=65,a2=0,dQ=280,len=420,up=180,r=60}){
+  Object.assign(d,{px,py,tau,a1:0,a2,dQ});
+  const qx=-dQ*Math.cos(tau*D2R);
+  Object.assign(d.L1,{op:1,draw:1,len,off:qx/2});
+  Object.assign(d.L2,{op:1,draw:1,len,off:(-qx/2)/Math.cos(a2*D2R)});
+  Object.assign(d.T,{op:1,draw:1,up,down:dQ+up});
+  WKEYS.forEach(k=>d.w[k].r=r);
+}
+const qPoint=s=>[s.px-s.dQ*Math.cos(s.tau*D2R),s.py+s.dQ*Math.sin(s.tau*D2R)];
+const dirv=a=>[Math.cos(a*D2R),-Math.sin(a*D2R)];
+const pt=(c,a,r)=>[c[0]+r*Math.cos(a*D2R),c[1]-r*Math.sin(a*D2R)];
+/* Wedge geometry. The measure is computed ONCE (rounded) for the UR/LL
+   wedges; UL/LR are 180 minus it, so displayed values always satisfy
+   the angle facts exactly, even mid-animation. */
+function wedgeGeom(k,s){
+  const atQ=k[0]==='Q',a=atQ?s.a2:s.a1,c=atQ?qPoint(s):[s.px,s.py],t=s.tau,m=Math.round(t-a);
+  switch(k.slice(2)){
+    case'UR':return{c,a0:a,a1:t,m};
+    case'UL':return{c,a0:t,a1:a+180,m:180-m};
+    case'LL':return{c,a0:a+180,a1:t+180,m};
+    default:return{c,a0:t+180,a1:a+360,m:180-m};
+  }
+}
+const measure=(s,k)=>wedgeGeom(k,s).m;
+function arcPath(c,a0,a1,r,closed){
+  const p0=pt(c,a0,r),p1=pt(c,a1,r),large=(a1-a0)>180?1:0;
+  return(closed?`M${c[0].toFixed(2)},${c[1].toFixed(2)} L`:'M')+`${p0[0].toFixed(2)},${p0[1].toFixed(2)} A${r},${r} 0 ${large} 0 ${p1[0].toFixed(2)},${p1[1].toFixed(2)}`+(closed?'Z':'');
+}
+function wedgeLabelPt(s,k,outer){
+  const g=wedgeGeom(k,s),W=s.w[k],mid=(g.a0+g.a1)/2,span=g.a1-g.a0;
+  if(outer)return pt(g.c,mid,W.r+(30+Math.max(0,60-span)*0.8)*s.fs);
+  return pt(g.c,mid,W.r*(span<40?0.74:0.6));
+}
+/* local diagram point -> stage point */
+const toStage=(s,p)=>[s.gx+s.gs*p[0],s.gy+s.gs*p[1]];
+/* place a diagram so that local point L lands on stage point S at scale k */
+function fit(d,L,S,k){d.gs=k;d.gx=S[0]-k*L[0];d.gy=S[1]-k*L[1];}
+
+/* ---------- interpolation ---------- */
+function lerpObj(a,b,t){
+  if(typeof b==='number')return typeof a==='number'?a+(b-a)*t:b;
+  if(typeof b==='string'){
+    if(b[0]==='#'&&typeof a==='string'&&a[0]==='#'&&a!==b)return mix(a,b,t);
+    if(b===''&&t<1&&typeof a==='string')return a; // fade out before clearing text
+    return b;
+  }
+  if(b&&typeof b==='object'){const o={};for(const k in b)o[k]=lerpObj(a?a[k]:undefined,b[k],t);return o;}
+  return b;
+}
+const World={cur:null,from:null,tgt:null,t0:0,dur:1,ease:easeIO,resolve:null,raf:0};
+function to(tgt,dur=800,ease=easeIO){
+  if(World.resolve){const r=World.resolve;World.resolve=null;r(false);}
+  if(!World.cur){World.cur=clone(tgt);}
+  World.from=World.cur;World.tgt=clone(tgt);World.t0=performance.now();
+  World.dur=Math.max(1,dur*MS());World.ease=ease;
+  return new Promise(res=>{World.resolve=res;if(!World.raf)World.raf=requestAnimationFrame(tick);});
+}
+function setNow(tgt){
+  if(World.resolve){const r=World.resolve;World.resolve=null;r(false);}
+  if(World.raf){cancelAnimationFrame(World.raf);World.raf=0;}
+  World.tgt=clone(tgt);World.cur=clone(tgt);render();
+}
+function tick(now){
+  const p=Math.min(1,(now-World.t0)/World.dur);
+  World.cur=lerpObj(World.from,World.tgt,World.ease(p));
+  render();
+  if(p<1){World.raf=requestAnimationFrame(tick);}
+  else{World.raf=0;World.cur=clone(World.tgt);render();const r=World.resolve;World.resolve=null;r&&r(true);}
+}
+
+/* ---------- diagram renderer (persistent SVG elements) ---------- */
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent&&parent.appendChild(e);return e;}
+function makeDiagram(root){
+  const E={root,w:{}};
+  const gW=mk('g',{},root),gL=mk('g',{},root),gC=mk('g',{},root),gT=mk('g',{},root);
+  WKEYS.forEach(k=>{
+    const g=mk('g',{},gW);
+    E.w[k]={g,halo:mk('path',{class:'halo',fill:'none','stroke-linecap':'round'},g),
+      fill:mk('path',{'fill-opacity':.62},g),arc:mk('path',{fill:'none','stroke-linecap':'round'},g),
+      lbl:mk('text',{class:'wlbl','font-weight':800},gT),val:mk('text',{class:'wval','font-weight':800},gT)};
+  });
+  E.L1=mk('line',{stroke:LINE.l,'stroke-linecap':'round'},gL);
+  E.L2=mk('line',{stroke:LINE.m,'stroke-linecap':'round'},gL);
+  E.T=mk('line',{stroke:LINE.t,'stroke-linecap':'round'},gL);
+  E.par1=mk('path',{fill:'none',stroke:'#2b2750','stroke-linecap':'round','stroke-linejoin':'round'},gL);
+  E.par2=mk('path',{fill:'none',stroke:'#2b2750','stroke-linecap':'round','stroke-linejoin':'round'},gL);
+  E.n1=mk('text',{class:'lname',fill:LINE.l,'font-style':'italic','font-weight':800},gT);E.n1.textContent='l';
+  E.n2=mk('text',{class:'lname',fill:LINE.m,'font-style':'italic','font-weight':800},gT);E.n2.textContent='m';
+  E.nT=mk('text',{class:'lname',fill:LINE.t,'font-style':'italic','font-weight':800},gT);E.nT.textContent='t';
+  E.conn=mk('path',{fill:'none',stroke:'#f08a3c','stroke-linecap':'round',pathLength:1},gC);
+  E.flow=mk('path',{class:'flow',fill:'none',stroke:'#fff','stroke-linecap':'round',pathLength:1,'stroke-dasharray':'0.02 0.03'},gC);
+  E.dP=mk('g',{},gC);E.dQ=mk('g',{},gC);
+  [E.dP,E.dQ].forEach(g=>{mk('circle',{class:'dotpulse',r:9,fill:'#ffd35c'},g);mk('circle',{r:8,fill:'#fff',stroke:'#2b2750','stroke-width':3.5},g);});
+  E.hd=mk('g',{class:'handle'},gC);
+  mk('circle',{class:'handle-ring',r:20,fill:'#ff6b6b','fill-opacity':.25},E.hd);
+  mk('circle',{r:17,fill:'#fff',stroke:'#ff6b6b','stroke-width':5},E.hd);
+  mk('path',{d:'M-6 -3 L0 -9 L6 -3 M-6 3 L0 9 L6 3',fill:'none',stroke:'#ff6b6b','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'},E.hd);
+  return E;
+}
+function drawLine(el,S,E,op,draw,sw){
+  const x2=S[0]+(E[0]-S[0])*draw,y2=S[1]+(E[1]-S[1])*draw;
+  el.setAttribute('x1',S[0]);el.setAttribute('y1',S[1]);el.setAttribute('x2',x2);el.setAttribute('y2',y2);
+  el.setAttribute('stroke-width',7*sw);el.setAttribute('opacity',draw>0.002?clamp01(op):0);
+}
+function lineEnds(c,a,off,len){const d=dirv(a),m=[c[0]+off*d[0],c[1]+off*d[1]];return{S:[m[0]-len*d[0],m[1]-len*d[1]],E:[m[0]+len*d[0],m[1]+len*d[1]],m,d};}
+function chevron(m,d,sw){const n=[-d[1],d[0]],tip=[m[0]+10*d[0],m[1]+10*d[1]],b=[m[0]-8*d[0],m[1]-8*d[1]];
+  return`M${b[0]+12*n[0]},${b[1]+12*n[1]} L${tip[0]},${tip[1]} L${b[0]-12*n[0]},${b[1]-12*n[1]}`;}
+function renderDiag(E,s){
+  E.root.setAttribute('transform',`translate(${s.gx} ${s.gy}) scale(${s.gs})`);
+  E.root.setAttribute('opacity',clamp01(s.op));
+  E.root.style.display=s.op<0.003?'none':'';
+  if(s.op<0.003)return;
+  const P=[s.px,s.py],Q=qPoint(s),sw=s.sw,fs=s.fs;
+  const l1=lineEnds(P,s.a1,s.L1.off,s.L1.len),l2=lineEnds(Q,s.a2,s.L2.off,s.L2.len),dt=dirv(s.tau);
+  const tS=[P[0]-s.T.down*dt[0],P[1]-s.T.down*dt[1]],tE=[P[0]+s.T.up*dt[0],P[1]+s.T.up*dt[1]];
+  drawLine(E.L1,l1.S,l1.E,s.L1.op,s.L1.draw,sw);
+  drawLine(E.L2,l2.S,l2.E,s.L2.op,s.L2.draw,sw);
+  drawLine(E.T,tS,tE,s.T.op,s.T.draw,sw);
+  // parallel markers
+  const pm1=[l1.m[0]+0.66*s.L1.len*l1.d[0],l1.m[1]+0.66*s.L1.len*l1.d[1]],pm2=[l2.m[0]+0.66*s.L2.len*l2.d[0],l2.m[1]+0.66*s.L2.len*l2.d[1]];
+  E.par1.setAttribute('d',chevron(pm1,l1.d));E.par2.setAttribute('d',chevron(pm2,l2.d));
+  [E.par1,E.par2].forEach(e=>{e.setAttribute('stroke-width',4.5*sw);});
+  E.par1.setAttribute('opacity',clamp01(s.par)*clamp01(s.L1.op)*(s.L1.draw>.9?1:0));
+  E.par2.setAttribute('opacity',clamp01(s.par)*clamp01(s.L2.op)*(s.L2.draw>.9?1:0));
+  // line names
+  const nm=(el,p,o,size)=>{el.setAttribute('x',p[0]);el.setAttribute('y',p[1]);el.setAttribute('opacity',clamp01(o));el.setAttribute('font-size',size);el.setAttribute('stroke-width',6);};
+  nm(E.n1,[l1.E[0]+22,l1.E[1]-22],s.L1.nameOp*s.L1.op,30*fs);
+  nm(E.n2,[l2.E[0]+22,l2.E[1]-22],s.L2.nameOp*s.L2.op,30*fs);
+  nm(E.nT,[tE[0]+38*Math.sin(s.tau*D2R)+6*dt[0],tE[1]+38*Math.cos(s.tau*D2R)+6*dt[1]],s.T.nameOp*s.T.op,30*fs);
+  // wedges
+  WKEYS.forEach(k=>{
+    const W=s.w[k],e=E.w[k],g=wedgeGeom(k,s),r=Math.max(0.01,W.r),op=clamp01(W.op);
+    e.g.setAttribute('opacity',op);
+    if(op>0.003){
+      e.fill.setAttribute('d',arcPath(g.c,g.a0,g.a1,r,true));e.fill.setAttribute('fill',W.fill);
+      const ad=arcPath(g.c,g.a0,g.a1,r,false);
+      e.arc.setAttribute('d',ad);e.arc.setAttribute('stroke',mix(W.fill,'#2b2750',0.35));e.arc.setAttribute('stroke-width',3.2*sw);
+      e.halo.setAttribute('d',ad);e.halo.setAttribute('stroke',W.fill);e.halo.setAttribute('opacity',clamp01(W.glow)*0.7);
+    }
+    const lo=clamp01(W.lblOp);
+    if(lo>0.003&&W.lbl){const p=wedgeLabelPt(s,k,false),sc=0.55+0.45*lo;
+      e.lbl.textContent=W.lbl;e.lbl.setAttribute('transform',`translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) scale(${sc})`);
+      e.lbl.setAttribute('font-size',25*fs);e.lbl.setAttribute('stroke-width',5);e.lbl.setAttribute('fill','#2b2750');
+      e.lbl.setAttribute('font-style',/^[a-z]$/.test(W.lbl)?'italic':'normal');e.lbl.setAttribute('opacity',lo);}
+    else e.lbl.setAttribute('opacity',0);
+    const vo=clamp01(W.valOp);
+    if(vo>0.003){const p=wedgeLabelPt(s,k,true),sc=0.6+0.4*vo,txt=W.val==='auto'?g.m+'°':W.val;
+      e.val.textContent=txt;e.val.setAttribute('transform',`translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) scale(${sc})`);
+      e.val.setAttribute('font-size',28*fs);e.val.setAttribute('stroke-width',7);
+      e.val.setAttribute('fill',W.val==='?'?'#e0484f':'#2b2750');e.val.setAttribute('opacity',vo);}
+    else e.val.setAttribute('opacity',0);
+  });
+  // intersection dots
+  [[E.dP,P,s.dotP],[E.dQ,Q,s.dotQ]].forEach(([g,p,o])=>{g.setAttribute('transform',`translate(${p[0]} ${p[1]}) scale(${sw})`);g.setAttribute('opacity',clamp01(o));});
+  // connector
+  const co=clamp01(s.conn.op);
+  if(co>0.003&&s.w[s.conn.from]&&s.w[s.conn.to]){
+    const a=wedgeLabelPt(s,s.conn.from,false),b=wedgeLabelPt(s,s.conn.to,false);
+    let n=[-(b[1]-a[1]),b[0]-a[0]];const L=Math.hypot(n[0],n[1])||1;n=[n[0]/L,n[1]/L];if(n[0]<0)n=[-n[0],-n[1]];
+    const ctl=[(a[0]+b[0])/2+n[0]*150,(a[1]+b[1])/2+n[1]*150];
+    const d=`M${a[0]},${a[1]} Q${ctl[0]},${ctl[1]} ${b[0]},${b[1]}`;
+    E.conn.setAttribute('d',d);E.flow.setAttribute('d',d);
+    E.conn.setAttribute('stroke-width',5*sw);E.flow.setAttribute('stroke-width',2.4*sw);
+    E.conn.setAttribute('stroke-dasharray',`${clamp01(s.conn.draw)} 2`);
+    E.conn.setAttribute('opacity',co);
+    E.conn.setAttribute('marker-end',s.conn.draw>.97?'url(#arrowHead)':'');
+    E.flow.setAttribute('opacity',s.conn.draw>.97?co*.9:0);
+  }else{E.conn.setAttribute('opacity',0);E.flow.setAttribute('opacity',0);}
+  // drag handle
+  E.hd.setAttribute('transform',`translate(${tE[0]} ${tE[1]}) scale(${sw})`);
+  E.hd.setAttribute('opacity',clamp01(s.handle));
+  E.hd.style.pointerEvents=s.handle>0.5?'auto':'none';
+}
+/* background cards drawn in SVG so diagrams can sit on top of them */
+const PANELS={a:[70,162,720,458],b:[810,162,720,458],q:[80,170,690,650]};
+const panelEls={};
+for(const k in PANELS){const[x,y,w,h]=PANELS[k];panelEls[k]=mk('rect',{x,y,width:w,height:h,rx:30,fill:'#fff','fill-opacity':.9,stroke:'#e2dcff','stroke-width':2,filter:'url(#soft)'},$('#panels'));}
+
+const D1=makeDiagram($('#d1')),D2=makeDiagram($('#d2'));
+const pipEl=$('#pip'),pupL=$('#pupL'),pupR=$('#pupR'),armR=$('.armR'),armL=$('.armL');
+(function ticks(){const g=$('#pipTicks');for(let a=15;a<180;a+=15){const r1=a%45===0?44:49,r2=55,p=x=>[80+x*Math.cos(a*D2R),134-x*Math.sin(a*D2R)],A=p(r1),B=p(r2);mk('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1]},g);}})();
+let lastMood='';
+function renderPip(p){
+  pipEl.style.opacity=clamp01(p.op);
+  pipEl.style.transform=`translate(${p.x-80*p.s}px,${p.y-150*p.s}px) scale(${p.s})`;
+  [[pupL,62],[pupR,98]].forEach(([el,ex])=>{
+    const wx=p.x+(ex-80)*p.s,wy=p.y+(106-150)*p.s,dx=p.lx-wx,dy=p.ly-wy,d=Math.hypot(dx,dy)||1;
+    el.setAttribute('transform',`translate(${(dx/d*4).toFixed(2)} ${(dy/d*4).toFixed(2)})`);
+  });
+  if(p.mood!==lastMood){pipEl.className='mood-'+p.mood;lastMood=p.mood;}
+  if(p.mood==='point'){
+    const left=p.lx<p.x,sx=p.x+(left?-60:60)*p.s,sy=p.y-34*p.s,ang=Math.atan2(p.ly-sy,p.lx-sx)/D2R;
+    if(left){armL.style.transform=`rotate(${(ang-180).toFixed(1)}deg)`;armR.style.transform='';}
+    else{armR.style.transform=`rotate(${ang.toFixed(1)}deg)`;armL.style.transform='';}
+  }else{armL.style.transform='';armR.style.transform='';}
+}
+function render(){
+  const w=World.cur;if(!w)return;
+  renderDiag(D1,w.d1);renderDiag(D2,w.d2);renderPip(w.pip);
+  for(const k in panelEls){const o=clamp01(w.pan[k]);panelEls[k].setAttribute('opacity',o);panelEls[k].style.display=o<.003?'none':'';}
+  const st=$('#stage').style;st.setProperty('--bg1',w.bg1);st.setProperty('--bg2',w.bg2);
+  const S=curS;S&&S.onFrame&&S.onFrame(w);
+}
+
+/* ---------- effects ---------- */
+const SPARK_COLS=['#ffd35c','#ff7aa8','#8b77ff','#7fe0bd','#86c8ff','#ffb48f'];
+function sparkle(x,y,n=12,spread=90){
+  if(REDUCED)n=Math.min(n,4);
+  const fx=$('#fx');
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div');s.className='spark';s.style.left=x+'px';s.style.top=y+'px';
+    s.style.background=SPARK_COLS[i%SPARK_COLS.length];const sz=0.6+Math.random()*0.9;
+    const a=Math.random()*Math.PI*2,r=spread*(0.45+Math.random()*0.7);
+    fx.appendChild(s);
+    s.animate([{transform:`translate(0,0) scale(0) rotate(0deg)`,opacity:1},
+      {transform:`translate(${Math.cos(a)*r*.7}px,${Math.sin(a)*r*.7}px) scale(${sz*1.3}) rotate(90deg)`,opacity:1,offset:.6},
+      {transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r+20}px) scale(0) rotate(160deg)`,opacity:0}],
+      {duration:900+Math.random()*500,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=()=>s.remove();
+  }
+}
+function wedgeStage(dk,k,outer=false){const s=World.cur[dk];return toStage(s,wedgeLabelPt(s,k,outer));}
+function sparkWedge(k,n=14,dk='d1'){const p=wedgeStage(dk,k,false);sparkle(p[0],p[1],n);}
+
+/* ---------- slide helpers ---------- */
+function reveal(el){if(!el||el.classList.contains('in'))return;el.classList.add('in');
+  el.animate([{opacity:0,transform:'translateY(18px) scale(.97)'},{opacity:1,transform:'none'}],{duration:560*MS(),easing:'cubic-bezier(.2,.8,.2,1)'});}
+function emph(el){if(!el)return;el.classList.remove('emph');void el.offsetWidth;el.classList.add('emph');}
+function say(el,html){const b=el.querySelector('.bubble .txt');if(!b)return;b.innerHTML=html;
+  b.parentElement.animate([{transform:'scale(.94)',opacity:.4},{transform:'scale(1.02)',opacity:1,offset:.6},{transform:'none',opacity:1}],{duration:420*MS(),easing:'ease-out'});}
+async function showLines(container,gap=420){for(const l of $$('.eqline',container)){l.classList.add('in');await wait(gap);}}
+function parseNum(v){const n=parseFloat(String(v).replace(/[°\s]/g,''));return isFinite(n)?n:null;}
+function blurBtn(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}
+const P2=n=>String(n).padStart(2,'0');
+
+/* =====================================================================
+   SLIDES
+   ===================================================================== */
+const SLIDES=[];
+let cur=-1,curEl=null,gen=0,curS=null;
+function ap(S,dur=800,ease=easeIO){if(S.g!==gen)return Promise.resolve(false);return to(S.scene(S.st),dur,ease);}
+
+/* ---------------- 1. Welcome ---------------- */
+SLIDES.push({
+  name:'Welcome to Angle Adventures',time:'0–2 min',
+  notes:`<ul><li>Let the opening animation play: lines draw, cross, and four angle regions bloom.</li><li>Ask: <i>"What do you notice where the two lines meet?"</i> (Four angles; some look the same size.)</li><li>Press <b>Start the Adventure</b> or <b>Next</b>.</li></ul>`,
+  html:()=>{
+    const grad=(st,t)=>t<.5?mix(st[0],st[1],t*2):mix(st[1],st[2],(t-.5)*2);
+    const word=(w,stops,d0)=>`<span>${[...w].map((c,i)=>`<span class="ltr" style="color:${grad(stops,i/(w.length-1))};animation-delay:${(d0+i*0.05).toFixed(2)}s">${c}</span>`).join('')}</span>`;
+    return`<div class="kicker" data-morph="kicker">Grade 7 · Lines &amp; Angles</div>
+    <div class="hero">
+      <h1 class="title" data-morph="title" aria-label="Angle Adventures">${word('ANGLE',['#6a57e8','#9b6bff','#ff6f9f'],0.1)}${word('ADVENTURES',['#ff7a59','#f29500','#1fa37f'],0.35)}</h1>
+      <p class="hero-sub">The Wonderful World of Hidden Angles</p>
+      <p class="hero-q">Can you uncover the secrets hidden where lines meet?</p>
+      <button class="start" data-act="start">Start the Adventure &nbsp;→</button>
+    </div>
+    <div class="bubble build" data-b="hi" style="left:1080px;top:610px;width:300px"><span class="who">Pip</span><span class="txt">Hi! I'm Pip, the Angle Explorer. Ready to investigate?</span></div>`;},
+  scene(st){
+    const w=baseWorld();w.bg1='#e6e0ff';w.bg2='#ffe4d6';
+    const d=w.d1;xDiagram(d,{px:1195,py:400,a1:-18,tau:st.ph>=2?58:-15,len:330,arm:290,r:0});
+    d.L1.draw=st.ph>=1?1:0;d.T.op=st.ph>=2?1:0;d.T.draw=st.ph>=2?1:0;
+    [['P_UR',C.yel],['P_UL',C.sky],['P_LL',C.peach],['P_LR',C.mint]].forEach(([k,c],i)=>{
+      const on=st.ph>=3&&st.wn>i;Object.assign(d.w[k],{fill:c,op:on?.9:0,r:on?92:0});});
+    w.pip={x:1460,y:st.ph>=4?850:1130,s:1.05,op:1,lx:st.ph>=4?1195:600,ly:st.ph>=4?400:300,mood:st.ph>=4?'wave':'idle'};
+    return w;
+  },
+  async enter(el){
+    const S=this,st=S.st;st.ph=0;st.wn=0;
+    el.querySelector('[data-act=start]').onclick=()=>{blurBtn();goTo(1);};
+    if(!World.cur)setNow(S.scene(st));else await ap(S,500);
+    await wait(250);if(S.g!==gen)return;
+    st.ph=1;await ap(S,900,easeOut);if(S.g!==gen)return;
+    st.ph=2;await ap(S,1100,easeIO);if(S.g!==gen)return;
+    st.ph=3;
+    for(let i=1;i<=4;i++){st.wn=i;ap(S,520,easeBack);await wait(170);if(S.g!==gen)return;}
+    await wait(400);if(S.g!==gen)return;
+    st.ph=4;ap(S,1000,easeOut);await wait(700);if(S.g!==gen)return;
+    reveal(el.querySelector('[data-b=hi]'));
+    sparkle(1195,400,10,70);
+    await wait(500);if(S.g!==gen)return;
+    el.querySelector('.start').classList.add('attn');
+  },
+  next(){return false;}
+});
+
+/* ---------------- 2. Four angles ---------------- */
+const XL={P_UR:'A',P_LR:'B',P_LL:'C',P_UL:'D'}; // clockwise from top-right
+SLIDES.push({
+  name:'Four Angles, One Intersection',time:'2–5 min',
+  notes:`<ul><li>Name the four angles A, B, C, D (clockwise). A and C are <i>opposite</i>; so are B and D.</li><li>Press <b>Next</b> to highlight ∠A = 70° and ask for a prediction for ∠C. Let several students commit to an answer before anyone clicks.</li><li>Reveal: ∠C = 70°. Introduce the term <b>vertically opposite angles</b>.</li><li>Press <b>Next</b> once more for the rule. Note B and D (110°) also match.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 1 · Where lines meet</div>
+    <h2 class="title" data-morph="title">Four Angles, One Intersection</h2>
+    <div class="bubble" style="left:1010px;top:150px;width:360px"><span class="who">Pip</span><span class="txt">Look carefully! Can you spot a relationship between the angles <b>opposite</b> each other?</span></div>
+    <div class="col" style="left:1010px;top:340px;width:520px">
+      <div class="card build" data-b="q">
+        <h3>Make a prediction</h3>
+        <div class="q">If <b>∠A</b> is <b>70°</b>, what do you think <b>∠C</b> will be?</div>
+        <div class="opts"><button class="opt" data-v="70">70°</button><button class="opt" data-v="90">90°</button><button class="opt" data-v="110">110°</button></div>
+        <div class="fb"></div>
+      </div>
+      <div class="card build" data-b="res">
+        <div class="chips"><span class="chip yel">∠A = 70°</span><span class="eqsign">and</span><span class="chip yel">∠C = 70°</span></div>
+        <div class="term">Vertically opposite angles</div>
+        <div class="small">∠A and ∠C face each other across the point where the lines cross.</div>
+      </div>
+      <div class="rule build" data-b="rule">Vertically opposite angles are equal.</div>
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#e2efff';w.bg2='#ffeedd';
+    const d=w.d1;xDiagram(d,{px:560,py:490,tau:70,len:400,arm:320,r:82});
+    const f={P_UR:C.yel,P_LR:C.sky,P_LL:C.peach,P_UL:C.mint};
+    if(st.ph>=2)f.P_LL=C.yel;if(st.ph>=3)f.P_UL=C.sky;
+    for(const k in XL)Object.assign(d.w[k],{op:.85,fill:f[k],lbl:XL[k],lblOp:st.lbl>Object.keys(XL).indexOf(k)?1:0});
+    if(st.ph>=1)Object.assign(d.w.P_UR,{glow:1,r:96,valOp:1});
+    if(st.ph>=2)Object.assign(d.w.P_LL,{glow:1,r:96,valOp:1});
+    if(st.ph>=3){Object.assign(d.w.P_UR,{glow:0,r:84});Object.assign(d.w.P_LL,{glow:0,r:84});d.w.P_LR.valOp=1;d.w.P_UL.valOp=1;}
+    const look=st.ph===2?[505,525]:st.ph===1?[610,450]:[560,490];
+    w.pip={x:1462,y:300,s:.85,op:1,lx:look[0],ly:look[1],mood:st.ph===2&&st.right?'cheer':'point'};
+    return w;
+  },
+  async enter(el){
+    const S=this,st=S.st;Object.assign(st,{ph:0,lbl:0,answered:false,nudged:false});
+    $$('.opt',el).forEach(b=>b.onclick=()=>{blurBtn();S.answer(+b.dataset.v,b);});
+    await ap(S,1100);
+    for(let i=1;i<=4;i++){if(S.g!==gen)return;st.lbl=i;ap(S,380,easeBack);await wait(150);}
+  },
+  answer(v,btn){
+    const S=this,st=S.st,el=curEl;if(st.answered)return;st.answered=true;st.right=v===70;
+    $$('.opt',el).forEach(b=>{b.disabled=true;if(+b.dataset.v===70)b.classList.add('correct');else if(b===btn)b.classList.add('wrong');});
+    btn.classList.add('picked');
+    const fb=$('.fb',el);
+    if(st.right){fb.className='fb good';fb.textContent='Great prediction! Let’s check it on the diagram…';}
+    else{fb.className='fb hint';fb.textContent=v===110?'110° is the angle next to A (∠B). Let’s look straight across instead…':'Interesting guess — the lines don’t make right angles here. Let’s check…';}
+    S.revealC();
+  },
+  async revealC(){
+    const S=this,st=S.st,el=curEl;st.ph=2;st.answered=true;
+    $$('.opt',el).forEach(b=>{b.disabled=true;if(+b.dataset.v===70)b.classList.add('correct');});
+    await ap(S,900,easeOut);if(S.g!==gen)return;
+    sparkWedge('P_LL',14);sparkWedge('P_UR',8);
+    say(el,st.right?'You spotted it! ∠C is exactly 70°, just like ∠A.':'Look — ∠C is 70°, exactly the same as ∠A!');
+    reveal($('[data-b=res]',el));
+  },
+  next(){
+    const S=this,st=S.st,el=curEl;
+    if(st.ph===0){st.ph=1;ap(S,700,easeBack);reveal($('[data-b=q]',el));say(el,'Here’s ∠A. It measures <b>70°</b>. Now — what about the angle opposite it?');return true;}
+    if(st.ph===1){if(!st.answered&&!st.nudged){st.nudged=true;say(el,'Make a prediction first! (Teacher: press Next again to reveal.)');emph($('[data-b=q]',el));return true;}
+      S.revealC();return true;}
+    if(st.ph===2){st.ph=3;ap(S,900);const r=$('[data-b=rule]',el);reveal(r);setTimeout(()=>emph(r),300);say(el,'And ∠B and ∠D? Both 110° — opposite angles always match!');return true;}
+    return false;
+  }
+});
+
+/* ---------------- 3. Angle Laboratory ---------------- */
+SLIDES.push({
+  name:'The Angle Laboratory',time:'5–9 min',
+  notes:`<ul><li>Drag the red handle on line <i>t</i> or use the slider. All four values are calculated from the live geometry.</li><li><b>Explore Opposite Angles</b>: students predict ∠C from ∠A, then rotate to see they stay equal.</li><li><b>Explore Adjacent Angles</b>: ∠A and ∠B sit side by side on a straight line — a <b>linear pair</b> — so they add to 180°.</li><li>Colour key: matching colours = vertically opposite pairs.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 2 · Experiment</div>
+    <h2 class="title" data-morph="title">The Angle Laboratory</h2>
+    <div class="bubble" style="left:1040px;top:150px;width:340px"><span class="who">Pip</span><span class="txt">Drag the red handle (or the slider) to rotate line <i>t</i>. Watch the numbers!</span></div>
+    <div class="col" style="left:1040px;top:318px;width:495px;gap:12px">
+      <div class="btnrow"><button class="btn sm" data-m="opp">Explore Opposite Angles</button><button class="btn sm" data-m="adj">Explore Adjacent Angles</button><button class="btn sm" data-m="reset">↺ Reset Experiment</button></div>
+      <div class="card" data-b="panel"></div>
+    </div>
+    <div class="lab-slider"><label for="tauR">Rotate line t</label><input id="tauR" type="range" min="25" max="155" step="1" value="70"><span class="ro">∠A = 70°</span></div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#dcf8ec';w.bg2='#ece6ff';
+    const d=w.d1;xDiagram(d,{px:560,py:470,tau:st.tau,len:420,arm:300,r:92});d.handle=st.lock?0.35:1;d.T.nameOp=1;d.L1.nameOp=1;
+    for(const k in XL)Object.assign(d.w[k],{op:.85,fill:(k==='P_UR'||k==='P_LL')?C.yel:C.sky,lbl:XL[k],lblOp:1,valOp:1});
+    if(st.mode==='opp'){Object.assign(d.w.P_UR,{glow:1,r:104});Object.assign(d.w.P_LL,{glow:st.rev?1:.4,r:104,val:st.rev?'auto':'?'});
+      ['P_LR','P_UL'].forEach(k=>Object.assign(d.w[k],{op:.3,valOp:.35,lblOp:.5}));}
+    if(st.mode==='adj'){Object.assign(d.w.P_UR,{glow:1,r:104});Object.assign(d.w.P_LR,{glow:1,r:104,fill:C.peach,val:st.rev?'auto':'?'});
+      ['P_LL','P_UL'].forEach(k=>Object.assign(d.w[k],{op:.3,valOp:.35,lblOp:.5}));}
+    w.pip={x:1470,y:292,s:.8,op:1,lx:560,ly:470,mood:st.mood||'point'};
+    return w;
+  },
+  enter(el){
+    const S=this,st=S.st;Object.assign(st,{tau:70,mode:null,rev:false,lock:false,mood:'point'});
+    const rng=$('#tauR',el);S.rng=rng;
+    rng.oninput=()=>{if(st.lock){rng.value=st.tau;return;}st.tau=+rng.value;ap(S,0);};
+    rng.onchange=()=>rng.blur();
+    $$('[data-m]',el).forEach(b=>b.onclick=()=>{blurBtn();S.mode(b.dataset.m);});
+    S.intro();
+    ap(S,1100);
+  },
+  intro(){$('[data-b=panel]',curEl).innerHTML=`<h3>Your mission</h3><div class="ptext">Rotate the line and compare the four angles.<ul><li><b style="color:#c99700">Yellow</b> angles are one opposite pair.</li><li><b style="color:#2f8fd8">Blue</b> angles are the other opposite pair.</li></ul>Then choose an investigation above.</div>`;},
+  setTau(v){this.st.tau=v;if(this.rng)this.rng.value=v;},
+  async mode(m){
+    const S=this,st=S.st,el=curEl,panel=$('[data-b=panel]',el);
+    $$('[data-m]',el).forEach(b=>b.classList.toggle('on',b.dataset.m===m&&m!=='reset'));
+    if(m==='reset'){Object.assign(st,{mode:null,rev:false,lock:false,mood:'point'});S.setTau(70);S.intro();say(el,'Experiment reset. Lines back to the start!');ap(S,900);return;}
+    st.mode=m;st.rev=false;st.lock=true;st.mood='point';
+    if(m==='opp'){
+      if(st.tau>=80&&st.tau<=100)S.setTau(58);
+      await ap(S,700);if(S.g!==gen)return;
+      const A=measure(World.tgt.d1,'P_UR'),opts=[A,180-A,90].sort((a,b)=>a-b);
+      panel.innerHTML=`<h3>Investigation 1 · Opposite angles</h3><div class="q">∠A is <b>${A}°</b> right now. Predict <b>∠C</b>.</div>
+        <div class="opts">${opts.map(v=>`<button class="opt" data-v="${v}">${v}°</button>`).join('')}</div><div class="fb"></div><div class="live-opp small" style="margin-top:10px"></div>`;
+      panel.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:450*MS(),easing:'ease-out'});
+      say(el,'∠A is glowing. What’s hiding behind the “?” at ∠C?');
+      $$('.opt',panel).forEach(b=>b.onclick=()=>{blurBtn();S.check(+b.dataset.v,b,A);});
+    }else{
+      S.setTau(70);await ap(S,900);if(S.g!==gen)return;
+      panel.innerHTML=`<h3>Investigation 2 · Adjacent angles</h3><div class="q">∠A and ∠B sit side by side on line <i>l</i>. If <b>∠A = 70°</b>, what is <b>∠B</b>?</div>
+        <div class="opts"><button class="opt" data-v="70">70°</button><button class="opt" data-v="90">90°</button><button class="opt" data-v="110">110°</button></div><div class="fb"></div>
+        <div class="eq" data-b="eq"></div>`;
+      panel.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:450*MS(),easing:'ease-out'});
+      say(el,'These two angles share a side and sit on a straight line…');
+      $$('.opt',panel).forEach(b=>b.onclick=()=>{blurBtn();S.check(+b.dataset.v,b,110);});
+    }
+  },
+  async check(v,btn,correct){
+    const S=this,st=S.st,el=curEl,panel=$('[data-b=panel]',el);
+    $$('.opt',panel).forEach(b=>{b.disabled=true;if(+b.dataset.v===correct)b.classList.add('correct');else if(b===btn)b.classList.add('wrong');});
+    const ok=v===correct,fb=$('.fb',panel),op=$('.opts',panel);
+    op.animate([{opacity:1},{opacity:0}],{duration:250*MS(),fill:'forwards'}).onfinish=()=>{op.style.display='none';};
+    fb.className='fb '+(ok?'good':'hint');
+    st.rev=true;st.mood=ok?'cheer':'point';ap(S,700,easeOut);
+    if(st.mode==='opp'){
+      fb.textContent=ok?'Spot on! ∠C equals ∠A.':'Not quite — ∠C turns out to equal ∠A.';$('.q',panel).innerHTML='Vertically opposite angles stay <b>equal</b> as the line turns.';
+      await wait(500);if(S.g!==gen)return;sparkWedge('P_LL');
+      say(el,'Now drag the line around. Do ∠A and ∠C ever stop being equal?');
+      $('.live-opp',panel).innerHTML='Live check: <b class="la"></b>';
+    }else{
+      fb.textContent=ok?'Yes! Here’s why:':'Good try! Here’s how to find it:';
+      const eq=$('[data-b=eq]',panel);
+      eq.style.fontSize='26px';eq.innerHTML=`<div class="eqline">∠A + ∠B = 180°</div><div class="eqline">∠B = 180° − <span class="la">70°</span></div><div class="eqline">∠B = <span class="lb">110°</span></div>
+        <div class="eqline"><div class="rule" style="margin-top:8px;font-size:22px">Angles forming a linear pair add up to 180°.</div></div>`;
+      await wait(400);if(S.g!==gen)return;sparkWedge('P_LR');
+      await showLines(eq,520);if(S.g!==gen)return;
+      say(el,'Rotate the line — the equation updates, and it always makes 180°!');
+    }
+    await wait(500);if(S.g!==gen)return;
+    st.lock=false;st.mood='point';ap(S,400);
+  },
+  onFrame(w){
+    const el=curEl;if(!el)return;const d=w.d1,A=measure(d,'P_UR'),B=measure(d,'P_LR'),Cc=measure(d,'P_LL');
+    const ro=$('.lab-slider .ro',el);if(ro)ro.textContent=`∠A = ${A}°`;
+    const la=$$('.la',el),lb=$$('.lb',el);
+    la.forEach(e=>e.textContent=this.st.mode==='opp'?`∠A = ${A}°, ∠C = ${Cc}° ✓`:`${A}°`);
+    lb.forEach(e=>e.textContent=`${B}°`);
+  },
+  next(){return false;}
+});
+/* drag handle on line t (slide 3) */
+(function(){
+  let drag=false;
+  const toLocal=e=>{const r=$('#stage').getBoundingClientRect(),s=World.cur.d1;return[((e.clientX-r.left)/scale-s.gx)/s.gs,((e.clientY-r.top)/scale-s.gy)/s.gs];};
+  D1.hd.addEventListener('pointerdown',e=>{if(cur!==2||curS.st.lock)return;drag=true;D1.hd.setPointerCapture(e.pointerId);e.preventDefault();});
+  D1.hd.addEventListener('pointermove',e=>{if(!drag||cur!==2)return;const S=curS,p=toLocal(e),d=World.cur.d1;
+    let a=Math.atan2(-(p[1]-d.py),p[0]-d.px)/D2R;if(a<0)a+=180;a=Math.round(Math.max(25,Math.min(155,a)));
+    if(a!==S.st.tau){S.setTau(a);ap(S,0);}});
+  const end=()=>{drag=false;};D1.hd.addEventListener('pointerup',end);D1.hd.addEventListener('pointercancel',end);
+})();
+
+/* ---------------- 4. The Transversal ---------------- */
+const NUM={P_UL:'1',P_UR:'2',P_LR:'3',P_LL:'4',Q_UL:'5',Q_UR:'6',Q_LR:'7',Q_LL:'8'};
+SLIDES.push({
+  name:'A New Clue: The Transversal',time:'9–11 min',
+  notes:`<ul><li>Watch line <i>l</i> slide up, line <i>t</i> stretch, and a new line <i>m</i> draw itself.</li><li>Next ①: definition of a <b>transversal</b> — it meets two lines at two distinct points.</li><li>Next ②: the eight angles are numbered 1–8.</li><li>Next ③: ∠2 and ∠6 are highlighted. Ask whether they occupy matching positions. <b>Don’t state the rule yet</b> — that’s the next slide.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 3 · A new clue</div>
+    <h2 class="title" data-morph="title">A New Clue: The Transversal</h2>
+    <div class="bubble" style="left:1040px;top:150px;width:345px"><span class="who">Pip</span><span class="txt">What happens when one line crosses <b>two</b> other lines?</span></div>
+    <div class="col" style="left:1090px;top:330px;width:440px">
+      <div class="rule def build" data-b="def" style="font-size:22px">A <b>transversal</b> is a line that intersects two or more lines at distinct points.</div>
+      <div class="card build" data-b="eight"><div class="ptext">Line <i style="color:#ff6b6b;font-weight:800">t</i> makes <b>two</b> crossings, so we get <b>8 angles</b>: 1–4 at the top crossing, 5–8 at the bottom.</div></div>
+      <div class="card build" data-b="q"><div class="q" style="font-size:24px">Do <b>∠2</b> and <b>∠6</b> seem to occupy matching positions?</div>
+        <div class="opts" style="margin-top:12px"><button class="btn" data-a="y">Yes, same spot!</button><button class="btn" data-a="n">Not sure</button></div><div class="fb"></div></div>
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#fff0db';w.bg2='#e5eaff';
+    const d=w.d1;tDiagram(d,{px:620,py:350,tau:65,a2:-7,dQ:280,len:420,r:58});
+    d.L2.draw=st.l2?1:0;
+    d.dotP=st.ph>=1?1:0;d.dotQ=st.ph>=1?1:0;d.L1.nameOp=d.L2.nameOp=d.T.nameOp=st.ph>=1?1:0;
+    WKEYS.forEach((k,i)=>{const on=st.ph>=2&&st.nl>i;Object.assign(d.w[k],{op:on?.75:0,r:on?58:20,fill:C.lav,lbl:on?NUM[k]:'',lblOp:on?1:0});});
+    if(st.ph>=3){Object.assign(d.w.P_UR,{fill:C.yel,glow:1,r:66,op:.95});
+      if(st.c2){Object.assign(d.w.Q_UR,{fill:C.yel,glow:1,r:66,op:.95});d.conn={op:1,draw:1,from:'P_UR',to:'Q_UR'};}}
+    const Q=qPoint(d);
+    w.pip={x:1450,y:298,s:.8,op:1,lx:st.ph>=3&&st.c2?Q[0]:620,ly:st.ph>=3&&st.c2?Q[1]:350,mood:st.ph===3&&st.ans==='y'?'cheer':st.ph===0?'think':'point'};
+    return w;
+  },
+  async enter(el){
+    const S=this,st=S.st;Object.assign(st,{ph:0,l2:0,nl:0,c2:false,ans:null});
+    $$('[data-a]',el).forEach(b=>b.onclick=()=>{blurBtn();S.answer(b.dataset.a,b);});
+    await ap(S,1200);if(S.g!==gen)return;
+    st.l2=1;await ap(S,900,easeOut);
+  },
+  answer(a){
+    const S=this,st=S.st,el=curEl;st.ans=a;$$('[data-a]',el).forEach(b=>{b.disabled=true;b.classList.toggle('on',b.dataset.a===a);});
+    const fb=$('.fb',el);fb.className='fb good';
+    fb.innerHTML=a==='y'?'Nice eye! Both are <b>above</b> their line and to the <b>right</b> of t.':'Look again: both sit <b>above</b> their line, to the <b>right</b> of t.';
+    say(el,'Same relative position… I wonder if that means anything? Let’s find out next!');ap(S,600);
+  },
+  next(){
+    const S=this,st=S.st,el=curEl;
+    if(st.ph===0){st.l2=1;st.ph=1;ap(S,800);reveal($('[data-b=def]',el));say(el,'Line <i>t</i> crosses line <i>l</i> AND line <i>m</i> — at two different points!');return true;}
+    if(st.ph===1){st.ph=2;reveal($('[data-b=eight]',el));say(el,'Two crossings means twice as many angles to explore.');
+      (async()=>{for(let i=1;i<=8;i++){if(S.g!==gen||st.ph!==2)return;st.nl=i;ap(S,380,easeBack);await wait(150);}})();return true;}
+    if(st.ph===2){st.nl=8;st.ph=3;ap(S,600,easeBack);say(el,'Here’s ∠2 at the top crossing…');
+      (async()=>{await wait(800);if(S.g!==gen)return;st.c2=true;ap(S,900,easeOut);say(el,'…and here’s ∠6 at the bottom crossing.');await wait(700);if(S.g!==gen)return;reveal($('[data-b=q]',el));})();return true;}
+    return false;
+  }
+});
+
+/* ---------------- 5. Corresponding angles ---------------- */
+SLIDES.push({
+  name:'The Corresponding-Angle Discovery',time:'11–16 min',
+  notes:`<ul><li>Line <i>m</i> rotates until it is parallel to <i>l</i> (arrow marks ›). ∠2 and ∠6 are <b>corresponding angles</b>.</li><li>Next ①: ∠2 = 65°; students predict ∠6.</li><li>Next ②: toggle <b>Not parallel</b>. ∠6 becomes 75° while ∠2 stays 65° — the rule needs parallel lines! Ask “What changed?”</li><li>Next ③: the converse — equal corresponding angles mean the lines are parallel.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 4 · The discovery</div>
+    <h2 class="title" data-morph="title">The Corresponding-Angle Discovery</h2>
+    <div class="bubble" style="left:1040px;top:150px;width:345px"><span class="who">Pip</span><span class="txt">I straightened line <i>m</i> so it’s <b>parallel</b> to line <i>l</i>.</span></div>
+    <div class="col" style="left:1090px;top:322px;width:445px;gap:12px">
+      <div class="rule def" style="font-size:21px">Corresponding angles occupy the <b>same relative position</b> at the two intersections.</div>
+      <div class="card build" data-b="q" style="padding:16px 22px"><div class="q" style="font-size:23px">If <b>∠2 = 65°</b>, what do you predict for <b>∠6</b>?</div>
+        <div class="opts" style="margin-top:10px"><button class="opt" data-v="25">25°</button><button class="opt" data-v="65">65°</button><button class="opt" data-v="115">115°</button></div><div class="fb"></div></div>
+      <div class="build" data-b="res"><div class="chips"><span class="chip yel">65°</span><span class="eqsign">=</span><span class="chip yel">65°</span></div></div>
+      <div class="rule build" data-b="rule" style="font-size:21px">When a transversal intersects two <b>parallel</b> lines, corresponding angles are equal.</div>
+      <div class="card build" data-b="tog" style="padding:14px 20px"><div class="toggle"><button data-p="1" class="on">Parallel</button><button data-p="0">Not parallel</button></div>
+        <div class="small live5" style="margin-top:8px;color:#2b2750;font-weight:700"></div></div>
+      <div class="rule conv build" data-b="conv" style="font-size:21px">If a pair of corresponding angles is equal, the two lines are parallel.</div>
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#ffe9f2';w.bg2='#e2f4ff';
+    const d=w.d1;tDiagram(d,{px:620,py:350,tau:65,a2:st.np?-10:0,dQ:280,len:420,r:58});
+    d.par=st.np?0:1;d.L1.nameOp=d.L2.nameOp=d.T.nameOp=1;
+    WKEYS.forEach(k=>Object.assign(d.w[k],{op:.5,fill:C.mist,lbl:NUM[k],lblOp:.85}));
+    const g=st.ph<2?1:(st.np?.6:0);
+    Object.assign(d.w.P_UR,{op:.95,fill:C.yel,glow:g,r:68,valOp:st.ph>=1?1:0});
+    Object.assign(d.w.Q_UR,{op:.95,fill:st.np?C.coral:C.yel,glow:g,r:68,valOp:st.ph>=1?1:0,val:st.ph>=2?'auto':'?'});
+    d.conn={op:1,draw:1,from:'P_UR',to:'Q_UR'};
+    w.pip={x:1450,y:298,s:.8,op:1,lx:620,ly:480,mood:st.cheer?'cheer':'point'};
+    return w;
+  },
+  async enter(el){
+    const S=this,st=S.st;Object.assign(st,{ph:0,np:false,answered:false,nudged:false,cheer:false});
+    $$('.opt',el).forEach(b=>b.onclick=()=>{blurBtn();S.answer(+b.dataset.v,b);});
+    $$('[data-p]',el).forEach(b=>b.onclick=()=>{blurBtn();S.setPar(b.dataset.p==='1');});
+    await ap(S,1200);
+  },
+  answer(v,btn){
+    const S=this,st=S.st,el=curEl;if(st.answered)return;st.answered=true;
+    $$('.opt',el).forEach(b=>{b.disabled=true;if(+b.dataset.v===65)b.classList.add('correct');else if(b===btn)b.classList.add('wrong');});
+    const fb=$('.fb',el),ok=v===65;fb.className='fb '+(ok?'good':'hint');
+    fb.textContent=ok?'Brilliant prediction!':v===115?'115° is the angle beside ∠6 (∠5). Same position means…':'25° would make a right angle with 65° — nothing here is 90°.';
+    S.revealSix();
+  },
+  async revealSix(){
+    const S=this,st=S.st,el=curEl;st.ph=2;st.answered=true;st.cheer=true;
+    $$('.opt',el).forEach(b=>{b.disabled=true;if(+b.dataset.v===65)b.classList.add('correct');});
+    await ap(S,800,easeOut);if(S.g!==gen)return;
+    sparkWedge('P_UR',10);sparkWedge('Q_UR',16);
+    reveal($('[data-b=res]',el));say(el,'Both 65°! Matching positions, matching angles. ✨');
+    await wait(500);if(S.g!==gen)return;reveal($('[data-b=rule]',el));emph($('[data-b=rule]',el));
+    await wait(1200);st.cheer=false;ap(S,300);
+  },
+  setPar(p){
+    const S=this,st=S.st,el=curEl;st.np=!p;$$('[data-p]',el).forEach(b=>b.classList.toggle('on',(b.dataset.p==='1')===p));
+    ap(S,900);
+    say(el,p?'Parallel again — and the corresponding angles match.':'What changed? Line <i>m</i> tilted, so it is <b>no longer parallel</b> to <i>l</i>…');
+  },
+  onFrame(w){
+    const el=curEl,o=el&&$('.live5',el);if(!o)return;const d=w.d1,a=measure(d,'P_UR'),b=measure(d,'Q_UR');
+    o.innerHTML=a===b?`∠2 = ${a}°, ∠6 = ${b}° → <span style="color:#14785d">equal</span> (lines parallel)`:`∠2 = ${a}°, ∠6 = ${b}° → <span style="color:#d0453f">not equal</span> (lines not parallel)`;
+  },
+  next(){
+    const S=this,st=S.st,el=curEl;
+    if(st.ph===0){st.ph=1;ap(S,600,easeBack);reveal($('[data-b=q]',el));say(el,'∠2 measures 65°. Predict ∠6 before we peek!');return true;}
+    if(st.ph===1){if(!st.answered&&!st.nudged){st.nudged=true;say(el,'Make a prediction first! (Teacher: press Next again to reveal.)');emph($('[data-b=q]',el));return true;}S.revealSix();return true;}
+    if(st.ph===2){st.ph=3;$('[data-b=q]',el).style.display='none';$('[data-b=res]',el).style.display='none';reveal($('[data-b=tog]',el));say(el,'Does this always work? Try <b>Not parallel</b>. What changed?');return true;}
+    if(st.ph===3){st.ph=4;if(st.np)S.setPar(true);$('.rule.def',el).style.display='none';reveal($('[data-b=conv]',el));emph($('[data-b=conv]',el));say(el,'It works in reverse too: equal corresponding angles mean parallel lines!');return true;}
+    return false;
+  }
+});
+
+/* ---------------- 6. Great Angle Challenge ---------------- */
+const CH=[
+  {k:'P_LR',n:'x',ans:115,fill:C.peach,
+    q:'Find <b><i>x</i></b> — the angle <b>vertically opposite</b> the 115° angle.',
+    hints:['Is your angle opposite the known angle, in the same relative position, or adjacent to it?','<i>x</i> is directly across the crossing from 115°. What do vertically opposite angles do?'],
+    work:['<i>x</i> is vertically opposite 115°','<i>x</i> = 115°']},
+  {k:'Q_UL',n:'y',ans:115,fill:C.peach,
+    q:'Find <b><i>y</i></b> — the <b>corresponding</b> angle at the lower crossing.',
+    hints:['Is your angle opposite the known angle, in the same relative position, or adjacent to it?','<i>y</i> is in the same position (above-left) as 115°, and the lines are parallel.'],
+    work:['<i>y</i> corresponds to 115° (lines parallel)','<i>y</i> = 115°']},
+  {k:'P_UR',n:'z',ans:65,fill:C.mint,
+    q:'Find <b><i>z</i></b> — the angle <b>adjacent</b> to 115°, forming a linear pair.',
+    hints:['Is your angle opposite the known angle, in the same relative position, or adjacent to it?','<i>z</i> and 115° sit together on straight line <i>l</i>, so they add up to 180°.'],
+    work:['<i>z</i> + 115° = 180°','<i>z</i> = 180° − 115°','<i>z</i> = 65°']}
+];
+SLIDES.push({
+  name:'The Great Angle Challenge',time:'16–20 min',
+  notes:`<ul><li>Same diagram, parallel lines. Known angle: <b>115°</b> (∠1 position).</li><li><i>x</i> = 115° (vertically opposite), <i>y</i> = 115° (corresponding), <i>z</i> = 65° (linear pair: 180° − 115°).</li><li>Wrong answers trigger hints, not “wrong!”. After two tries a <b>Show me</b> button appears.</li><li><b>Next</b> moves to the next question once one is solved.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 5 · Challenge</div>
+    <h2 class="title" data-morph="title">The Great Angle Challenge</h2>
+    <div class="bubble" style="left:1040px;top:150px;width:345px"><span class="who">Pip</span><span class="txt">One angle is <b>115°</b>. Can you crack the three mystery angles?</span></div>
+    <div class="col" style="left:1090px;top:322px;width:445px">
+      <div class="card" data-b="qc"></div>
+      <div class="card" data-b="work" style="padding:16px 22px"><h3>Solutions</h3><div class="eq" data-b="eqs" style="font-size:21px;line-height:1.45"></div></div>
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#fff3d6';w.bg2='#ffe2ea';
+    const d=w.d1;tDiagram(d,{px:600,py:350,tau:65,a2:0,dQ:280,len:420,r:60});
+    d.par=1;d.L1.nameOp=d.L2.nameOp=d.T.nameOp=1;
+    Object.assign(d.w.P_UL,{op:.95,fill:C.peach,valOp:1,r:66,glow:st.q<0?1:0});
+    CH.forEach((c,i)=>{const solved=st.solved[i],shown=st.qm>i;
+      Object.assign(d.w[c.k],{op:shown?.9:0,r:shown?62:10,fill:solved?c.fill:C.mist,lbl:shown?c.n:'',lblOp:shown?1:0,val:solved?'auto':'?',valOp:shown?1:0,glow:st.q===i&&!solved?1:0});});
+    if(st.q>=0&&st.q<3){const k=CH[st.q].k;d.w[k].r=st.solved[st.q]?66:70;}
+    const tk=st.q>=0&&st.q<3?CH[st.q].k:'P_UL',g=wedgeGeom(tk,d),lp=pt(g.c,(g.a0+g.a1)/2,40);
+    w.pip={x:1450,y:298,s:.8,op:1,lx:lp[0],ly:lp[1],mood:st.cheer?'cheer':st.wrong?'think':'point'};
+    return w;
+  },
+  async enter(el){
+    const S=this,st=S.st;Object.assign(st,{q:-1,qm:0,solved:[false,false,false],tries:0,cheer:false,wrong:false});
+    $('[data-b=work]',el).style.display='none';
+    $('[data-b=qc]',el).innerHTML='<div class="ptext">Look at the diagram: lines <i>l</i> and <i>m</i> are parallel (see the › marks).<br><br>Three angles are hiding behind <b style="color:#e0484f">?</b> marks.</div>';
+    await ap(S,1000);
+    for(let i=1;i<=3;i++){if(S.g!==gen)return;await wait(220);if(S.g!==gen)return;st.qm=Math.max(st.qm,i);ap(S,450,easeBack);}
+    await wait(600);if(S.g!==gen||st.q>=0)return;S.ask(0);
+  },
+  ask(i){
+    const S=this,st=S.st,el=curEl,c=CH[i];st.q=i;st.tries=0;st.wrong=false;
+    const qc=$('[data-b=qc]',el);
+    qc.innerHTML=`<div class="qnum">Question ${i+1} of 3</div><div class="q" style="font-size:24px;margin-top:6px">${c.q}</div>
+      <form class="numform"><input type="text" inputmode="numeric" autocomplete="off" aria-label="Your answer in degrees" placeholder="?"><span class="deg">°</span><button class="btn primary" type="submit">Check</button></form><div class="fb"></div>`;
+    qc.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:450*MS(),easing:'ease-out'});
+    const f=$('form',qc);f.onsubmit=e=>{e.preventDefault();S.check($('input',qc).value);};
+    say(el,['Which angle sits straight across from 115°?','Now jump down to the second crossing…','Last one! This angle shares a straight line with 115°.'][i]);
+    ap(S,700,easeBack);
+  },
+  check(v){
+    const S=this,st=S.st,el=curEl,c=CH[st.q],qc=$('[data-b=qc]',el),fb=$('.fb',qc),n=parseNum(v);
+    if(n===null){fb.className='fb hint';fb.textContent='Type a number of degrees, like 40.';return;}
+    if(n===c.ans){S.solve(true);return;}
+    st.tries++;st.wrong=true;ap(S,300);
+    fb.className='fb hint';fb.innerHTML='💡 '+c.hints[Math.min(st.tries-1,1)];
+    if(st.tries>=2&&!$('.showme',qc)){const b=document.createElement('button');b.className='btn showme';b.style.marginTop='10px';b.textContent='Show me the solution';b.onclick=()=>{blurBtn();S.solve(false);};qc.appendChild(b);}
+    $('input',qc).select();
+  },
+  async solve(byStudent){
+    const S=this,st=S.st,el=curEl,i=st.q,c=CH[i],qc=$('[data-b=qc]',el);
+    if(st.solved[i])return;st.solved[i]=true;st.wrong=false;st.cheer=byStudent;
+    const fb=$('.fb',qc);fb.className='fb good';fb.innerHTML=byStudent?'Correct! 🎉':'Here’s the reasoning:';
+    $$('input,button',qc).forEach(b=>b.disabled=true);
+    const fm=$('form',qc);if(fm)fm.remove();const sm=$('.showme',qc);if(sm)sm.remove();
+    await ap(S,700,easeBack);if(S.g!==gen)return;
+    sparkWedge(c.k,byStudent?16:6);
+    const work=$('[data-b=work]',el);if(work.style.display==='none'){work.style.display='';reveal(work);work.classList.add('in');}
+    const eqs=$('[data-b=eqs]',el),blk=document.createElement('div');blk.style.marginBottom='6px';
+    blk.innerHTML=c.work.map((t,j)=>`<div class="eqline"${j<c.work.length-1?' style="font-size:18px;color:#5d5887"':''}>${t}</div>`).join('');
+    eqs.appendChild(blk);await showLines(blk,450);if(S.g!==gen)return;
+    if(i<2){const b=document.createElement('button');b.className='btn primary';b.style.marginTop='12px';b.textContent='Next question →';b.onclick=()=>{blurBtn();S.ask(i+1);};qc.appendChild(b);
+      say(el,byStudent?'You solved it! On to the next mystery.':'Now you know the trick — try the next one!');}
+    else{st.q=3;say(el,'All three solved! You’re a real angle detective.');qc.insertAdjacentHTML('beforeend','<div class="celebrate" style="margin-top:10px">Challenge complete! ★</div>');sparkle(1300,360,20,140);}
+    await wait(1100);st.cheer=false;if(S.g===gen)ap(S,300);
+  },
+  next(){
+    const st=this.st;
+    if(st.q===-1){st.qm=3;this.ask(0);return true;}
+    if(st.q<3&&st.q>=0){if(st.solved[st.q]){if(st.q<2){this.ask(st.q+1);return true;}return false;}
+      say(curEl,'Give it a try first — type your answer and press Check. Stuck? Read the hint!');emph($('[data-b=qc]',curEl));return true;}
+    return false;
+  }
+});
+
+/* ---------------- 7. Quick-Fire Quiz ---------------- */
+const QUIZ=[
+  {q:'Two straight lines intersect. One angle is <b>72°</b>. What is its <b>vertically opposite</b> angle?',opts:[18,72,108,288],ans:72,
+    hints:{18:'18° is what you’d add to 72° to make 90°. Opposite angles don’t add up — they match!',108:'108° is the angle <i>next to</i> 72° (a linear pair). Look straight across the crossing instead.',288:'288° is the rest of the full turn (360° − 72°). We want the single angle directly opposite.'},
+    why:'Vertically opposite angles are equal, so the answer is <b>72°</b>.'},
+  {q:'Two <b>parallel</b> lines are crossed by a transversal. One angle is <b>65°</b>. What is its <b>corresponding</b> angle?',opts:[25,65,115,180],ans:65,
+    hints:{25:'25° + 65° = 90°, but nothing in this diagram makes a right angle.',115:'115° is the angle <i>beside</i> the corresponding angle. Same position means same size here.',180:'180° is a whole straight line, not one angle.'},
+    why:'The lines are parallel, so corresponding angles are equal: <b>65°</b>.'},
+  {q:'One angle in a <b>linear pair</b> is <b>72°</b>. Find the other angle.',num:true,ans:108,
+    hint:'A linear pair sits on a straight line, so the two angles add up to 180°. Try 180° − 72°.',
+    why:'180° − 72° = <b>108°</b>.'}
+];
+SLIDES.push({
+  name:'The Quick-Fire Quiz',time:'20–23 min',
+  notes:`<ul><li>One question at a time. Wrong choices give a hint and the student can try again.</li><li>The diagram on the left morphs to match each question.</li><li>Answers: 72°, 65°, 108°.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 6 · Quick check</div>
+    <h2 class="title" data-morph="title">The Quick-Fire Quiz</h2>
+    <div class="card" data-b="quiz" style="position:absolute;left:820px;top:170px;width:700px;min-height:560px;padding:30px 34px">
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#e9e4ff';w.bg2='#dcf7ee';w.pan.q=1;
+    const d=w.d1,qi=Math.min(st.q,2),done=st.done[qi];
+    d.fs=1.3;d.sw=1.25;
+    if(qi===1){tDiagram(d,{px:640,py:330,tau:65,a2:0,dQ:280,len:420,r:66});d.par=1;
+      WKEYS.forEach(k=>Object.assign(d.w[k],{op:.4,fill:C.mist}));
+      Object.assign(d.w.P_UR,{op:.95,fill:C.yel,valOp:1});Object.assign(d.w.Q_UR,{op:.95,fill:C.yel,valOp:1,val:done?'auto':'?',glow:done?0:1});
+      d.conn={op:1,draw:1,from:'P_UR',to:'Q_UR'};
+      const Q=qPoint(d);fit(d,[(640+Q[0])/2,(330+Q[1])/2],[425,520],0.72);
+    }else{
+      xDiagram(d,{px:640,py:450,tau:72,len:400,arm:320,r:80});
+      WKEYS.forEach(k=>Object.assign(d.w[k],{op:k[0]==='P'?.4:0,fill:C.mist}));
+      Object.assign(d.w.P_UR,{op:.95,fill:C.yel,valOp:1});
+      const tk=qi===0?'P_LL':'P_UL';
+      Object.assign(d.w[tk],{op:.95,fill:qi===0?C.yel:C.peach,valOp:1,val:done?'auto':'?',glow:done?0:1});
+      fit(d,[640,450],[425,500],0.72);
+    }
+    w.pip={x:1505,y:150,s:.6,op:1,lx:425,ly:500,mood:st.cheer?'cheer':'point'};
+    return w;
+  },
+  enter(el){
+    const S=this,st=S.st;Object.assign(st,{q:0,done:[false,false,false],cheer:false});
+    S.show(0);ap(S,1100);
+  },
+  show(i){
+    const S=this,st=S.st,box=$('[data-b=quiz]',curEl);st.q=i;
+    const dots=QUIZ.map((_,j)=>`<i class="${st.done[j]?'done':j===i?'cur':''}"></i>`).join('');
+    if(i>=3){
+      box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="qnum">Quiz complete</div><div class="dots">${dots}</div></div>
+      <div class="celebrate" style="margin-top:26px;font-size:36px">You checked all three big ideas!</div>
+      <div class="ptext" style="margin-top:16px"><ul><li>Vertically opposite angles are <b>equal</b>.</li><li>Corresponding angles (parallel lines) are <b>equal</b>.</li><li>A linear pair adds up to <b>180°</b>.</li></ul></div>
+      <div class="small" style="margin-top:18px">Press <b>Next</b> to close the case.</div>`;
+      sparkle(1170,420,24,160);return;
+    }
+    const Q=QUIZ[i];
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="qnum">Question ${i+1} of 3</div><div class="dots">${dots}</div></div>
+      <div class="q" style="margin-top:18px;font-size:29px">${Q.q}</div>
+      ${Q.num?`<form class="numform" style="margin-top:22px"><input type="text" inputmode="numeric" autocomplete="off" aria-label="Your answer in degrees" placeholder="?"><span class="deg">°</span><button class="btn primary" type="submit">Check</button></form>`
+        :`<div class="opts" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px">${Q.opts.map(v=>`<button class="opt" data-v="${v}">${v}°</button>`).join('')}</div>`}
+      <div class="fb"></div><div data-b="after"></div>`;
+    box.animate([{opacity:0,transform:'translateX(30px)'},{opacity:1,transform:'none'}],{duration:500*MS(),easing:'cubic-bezier(.2,.8,.2,1)'});
+    if(Q.num){const f=$('form',box);f.onsubmit=e=>{e.preventDefault();S.answer(parseNum($('input',box).value),null);};}
+    else $$('.opt',box).forEach(b=>b.onclick=()=>{blurBtn();S.answer(+b.dataset.v,b);});
+    ap(S,1000);
+  },
+  async answer(v,btn){
+    const S=this,st=S.st,i=st.q,Q=QUIZ[i],box=$('[data-b=quiz]',curEl),fb=$('.fb',box);
+    if(st.done[i])return;
+    if(v===null){fb.className='fb hint';fb.textContent='Type a number of degrees.';return;}
+    if(v!==Q.ans){fb.className='fb hint';fb.innerHTML='💡 '+(Q.num?Q.hint:Q.hints[v]);if(btn){btn.classList.add('wrong');btn.disabled=true;}else $('input',box).select();return;}
+    st.done[i]=true;st.cheer=true;
+    if(btn)btn.classList.add('correct');$$('.opt,input,button',box).forEach(b=>b.disabled=true);
+    fb.className='fb good';fb.innerHTML='✓ Correct! '+Q.why;
+    $$('.dots i',box)[i].className='done';
+    await ap(S,700,easeBack);if(S.g!==gen)return;
+    sparkWedge(i===1?'Q_UR':i===0?'P_LL':'P_UL',16);
+    const nb=document.createElement('button');nb.className='btn primary';nb.style.marginTop='18px';nb.textContent=i<2?'Next question →':'Finish quiz ★';
+    nb.onclick=()=>{blurBtn();st.cheer=false;S.show(i+1);};$('[data-b=after]',box).appendChild(nb);
+  },
+  next(){
+    const st=this.st;if(st.q>=3)return false;
+    if(st.done[st.q]){st.cheer=false;this.show(st.q+1);return true;}
+    const box=$('[data-b=quiz]',curEl),fb=$('.fb',box);fb.className='fb hint';fb.textContent='Choose an answer first — take your time!';emph(box);return true;
+  }
+});
+
+/* ---------------- 8. Case Closed ---------------- */
+SLIDES.push({
+  name:'Case Closed!',time:'23–25 min',
+  notes:`<ul><li>Both discoveries side by side. Ask students to explain each rule in their own words.</li><li>Exit ticket: linear pair with 72° → <b>108°</b>.</li><li>Use the buttons to replay or revisit a topic.</li></ul>`,
+  html:()=>`<div class="kicker" data-morph="kicker">Chapter 7 · Case closed</div>
+    <h2 class="title" data-morph="title">Case Closed!</h2>
+    <div style="position:absolute;left:110px;top:448px;width:650px">
+      <div class="ph">Discovery 1</div><div class="ph2">Vertically Opposite Angles</div>
+      <div class="ptext"><ul style="margin:0"><li>Vertically opposite angles are equal.</li><li>Angles in a linear pair add up to 180°.</li></ul></div></div>
+    <div style="position:absolute;left:850px;top:448px;width:650px">
+      <div class="ph">Discovery 2</div><div class="ph2">Corresponding Angles</div>
+      <div class="ptext"><ul style="margin:0"><li>Corresponding angles are equal when the lines are parallel.</li><li>Equal corresponding angles mean the lines are parallel.</li></ul></div></div>
+    <div class="card" data-b="ticket" style="position:absolute;left:70px;top:640px;width:940px;padding:14px 26px">
+      <h3>Exit ticket</h3>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div class="q" style="font-size:23px">If one angle in a linear pair is <b>72°</b>, what is the other angle?</div>
+        <form class="numform" style="margin-top:0"><input type="text" inputmode="numeric" autocomplete="off" aria-label="Your answer in degrees" placeholder="?"><span class="deg">°</span><button class="btn primary" type="submit">Check</button></form>
+      </div><div class="fb"></div></div>
+    <div style="position:absolute;left:1035px;top:648px;display:flex;flex-direction:column;gap:10px;width:300px">
+      <button class="btn sm primary" data-go="0">↺ Replay Presentation</button>
+      <button class="btn sm" data-go="1">Revisit Opposite Angles</button>
+      <button class="btn sm" data-go="4">Revisit Corresponding Angles</button>
+    </div>`,
+  scene(st){
+    const w=baseWorld();w.bg1='#ffeedd';w.bg2='#e6e0ff';w.pan.a=1;w.pan.b=1;
+    const a=w.d2;a.op=1;xDiagram(a,{px:560,py:450,tau:70,len:400,arm:320,r:82});a.fs=1.75;a.sw=1.6;
+    for(const k in XL)Object.assign(a.w[k],{op:.9,fill:(k==='P_UR'||k==='P_LL')?C.yel:C.sky,valOp:1});
+    fit(a,[560,450],[430,300],0.4);
+    const d=w.d1;tDiagram(d,{px:620,py:350,tau:65,a2:0,dQ:280,len:420,r:62});d.par=1;d.fs=1.7;d.sw=1.5;
+    WKEYS.forEach(k=>Object.assign(d.w[k],{op:.5,fill:C.mist}));
+    Object.assign(d.w.P_UR,{op:.95,fill:C.yel,valOp:1});Object.assign(d.w.Q_UR,{op:.95,fill:C.yel,valOp:1});
+    d.conn={op:1,draw:1,from:'P_UR',to:'Q_UR'};
+    const Q=qPoint(d);fit(d,[(620+Q[0])/2,(350+Q[1])/2],[1170,298],0.41);
+    w.pip={x:1470,y:860,s:.8,op:1,lx:640,ly:720,mood:st.done?'cheer':'point'};
+    return w;
+  },
+  enter(el){
+    const S=this,st=S.st;st.done=false;
+    // Transition G: the recap's first diagram splits off from wherever the main diagram currently is
+    const t=S.scene(st),c=World.cur,d2=clone(t.d2),s1=c.d1;
+    const cx=s1.gx+s1.gs*s1.px,cy=s1.gy+s1.gs*s1.py;fit(d2,[d2.px,d2.py],[cx,cy],s1.gs);d2.op=0;c.d2=d2;
+    $$('[data-go]',el).forEach(b=>b.onclick=()=>{blurBtn();goTo(+b.dataset.go);});
+    const f=$('form',el);f.onsubmit=e=>{e.preventDefault();S.check($('input',el).value);};
+    ap(S,1300);
+  },
+  check(v){
+    const S=this,st=S.st,el=curEl,fb=$('[data-b=ticket] .fb',el),n=parseNum(v);
+    if(st.done)return;
+    if(n===null){fb.className='fb hint';fb.textContent='Type a number of degrees.';return;}
+    if(n!==108){fb.className='fb hint';fb.innerHTML='💡 The two angles of a linear pair add up to 180°. What is 180° − 72°?';$('input',el).select();return;}
+    st.done=true;$$('[data-b=ticket] input,[data-b=ticket] button',el).forEach(b=>b.disabled=true);
+    fb.className='fb good';fb.innerHTML='✓ 180° − 72° = <b>108°</b>.<div class="celebrate" style="margin-top:4px;font-size:25px">Amazing work, Angle Explorer! You discovered the rules yourself.</div>';
+    ap(S,600);sparkle(500,760,26,180);setTimeout(()=>sparkle(1180,300,20,150),350);setTimeout(()=>sparkle(430,300,20,150),650);
+  },
+  next(){if(!this.st.done){const fb=$('[data-b=ticket] .fb',curEl);fb.className='fb hint';fb.textContent='Last step: answer the exit ticket!';emph($('[data-b=ticket]',curEl));return true;}return false;}
+});
+
+/* =====================================================================
+   TRANSITION MANAGER (HTML layer) + NAVIGATION
+   ===================================================================== */
+let scale=1;
+const stage=$('#stage'),slidesLayer=$('#slides');
+function relRect(el){const r=el.getBoundingClientRect(),s=stage.getBoundingClientRect();return{left:(r.left-s.left)/scale,top:(r.top-s.top)/scale,width:r.width/scale,height:r.height/scale};}
+const MORPH_EASE='cubic-bezier(.65,0,.35,1)';
+function flip(o,n,dur){
+  const a=relRect(o),b=relRect(n);if(!a.height||!b.height)return false;
+  const k=Math.min(a.height/b.height,a.width/b.width),dx=a.left-b.left,dy=a.top-b.top;
+  n.style.transformOrigin=o.style.transformOrigin='0 0';
+  n.animate([{transform:`translate(${dx}px,${dy}px) scale(${k})`,opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}],{duration:dur,easing:MORPH_EASE,fill:'backwards'});
+  o.animate([{transform:'none',opacity:1},{opacity:0,offset:.5},{transform:`translate(${-dx}px,${-dy}px) scale(${1/k})`,opacity:0}],{duration:dur,easing:MORPH_EASE,fill:'forwards'});
+  return true;
+}
+function htmlTransition(oldEl,newEl,dir,allowMorph){
+  const dur=950*MS(),newM=new Set(),oldM=new Set();
+  if(oldEl){
+    oldEl.classList.add('leaving');
+    if(allowMorph&&!REDUCED){
+      $$('[data-morph]',newEl).forEach(n=>{const o=$(`[data-morph="${n.dataset.morph}"]`,oldEl);if(o&&flip(o,n,dur)){newM.add(n);oldM.add(o);}});
+    }
+    [...oldEl.children].forEach(ch=>{
+      if(oldM.has(ch))return;
+      if(ch.querySelector&&[...oldM].some(m=>ch.contains(m))){ // container of a morphing element: fade its other children
+        [...ch.children].forEach(cc=>{if(!oldM.has(cc))cc.animate([{opacity:1},{opacity:0}],{duration:300*MS(),fill:'forwards'});});return;}
+      ch.animate([{opacity:1,transform:'none'},{opacity:0,transform:`translateX(${-36*dir}px)`}],{duration:360*MS(),easing:'ease-in',fill:'forwards'});
+    });
+    setTimeout(()=>oldEl.remove(),dur+120);
+  }
+  let i=0;
+  const enterEl=ch=>{ch.animate([{opacity:0,transform:`translateX(${46*dir}px)`},{opacity:1,transform:'none'}],{duration:640*MS(),delay:((oldEl?320:120)+i*90)*MS(),easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});i++;};
+  [...newEl.children].forEach(ch=>{
+    if(newM.has(ch))return;
+    if(ch.classList.contains('build')&&!ch.classList.contains('in'))return;
+    if([...newM].some(m=>ch.contains(m))){[...ch.children].forEach(cc=>{if(!newM.has(cc))enterEl(cc);});return;}
+    enterEl(ch);
+  });
+}
+function goTo(i){
+  if(i<0||i>=SLIDES.length)return;
+  const dir=i>=cur?1:-1,oldEl=curEl,S=Object.create(SLIDES[i]);curS=S;
+  gen++;S.g=gen;S.st={};
+  const el=document.createElement('section');el.className='slide';el.setAttribute('aria-label',`Slide ${i+1}: ${S.name}`);
+  el.innerHTML=S.html();slidesLayer.appendChild(el);
+  const prevIdx=cur;cur=i;curEl=el;
+  htmlTransition(oldEl,el,dir,i!==0||prevIdx===-1);
+  updateChrome();
+  S.enter(el);
+}
+function next(){const S=curS;if(S&&S.next&&S.next())return;if(cur<SLIDES.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+function updateChrome(){
+  $('#count').innerHTML=`${P2(cur+1)} <small>/ ${P2(SLIDES.length)}</small>`;
+  $('#prog i').style.width=((cur+1)/SLIDES.length*100)+'%';
+  const S=SLIDES[cur];$('#notes').innerHTML=`<h4>Slide ${cur+1} · ${S.time}</h4><div class="nt">${S.name}</div>${S.notes}<div style="margin-top:10px;color:#a59ed6;font-size:13px">Keys: → / Space next · ← back · N notes · F fullscreen</div>`;
+}
+
+/* ---------- layout & chrome ---------- */
+function layout(){
+  const W=innerWidth,H=innerHeight,bar=66,pad=Math.min(16,W*0.02);
+  scale=Math.min((W-pad*2)/1600,(H-bar-pad)/900);
+  const x=(W-1600*scale)/2,y=Math.max(pad*0.6,(H-bar-900*scale)/2);
+  stage.style.transform=`translate(${x}px,${y}px) scale(${scale})`;
+}
+addEventListener('resize',layout);layout();
+$('#bNext').onclick=()=>next();$('#bPrev').onclick=()=>prev();
+$('#bRestart').onclick=()=>goTo(0);
+$('#bNotes').onclick=()=>{$('#notes').classList.toggle('show');$('#bNotes').classList.toggle('on');};
+function setReduced(v){REDUCED=v;document.body.classList.toggle('reduced',v);$('#bMotion').classList.toggle('on',v);$('#bMotion').title=v?'Reduced motion: ON':'Reduce motion';}
+$('#bMotion').onclick=()=>setReduced(!REDUCED);setReduced(REDUCED);
+function toggleFull(){if(!document.fullscreenElement){(document.documentElement.requestFullscreen||function(){}).call(document.documentElement);}else document.exitFullscreen&&document.exitFullscreen();}
+$('#bFull').onclick=toggleFull;
+document.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select')return;
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();next();}
+  else if(e.key===' '){if(tag==='button')return;e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+  else if(e.key==='n'||e.key==='N')$('#bNotes').click();
+  else if(e.key==='f'||e.key==='F')toggleFull();
+});
+// After clicking a chrome button, drop focus so Space/arrows keep driving the deck
+$$('#bar button').forEach(b=>b.addEventListener('click',()=>b.blur()));
+
+goTo(0);
+</script>
+</body>
+</html>
